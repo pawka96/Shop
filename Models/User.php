@@ -45,7 +45,8 @@ class User {
 
                 return "Вы успешно зарегистрированы.";
             }
-        } catch (PDOException $exception) {
+        }
+        catch (PDOException $exception) {
 
             return "Ошибка: " . $exception -> getMessage();
         }
@@ -67,8 +68,8 @@ class User {
 
                 return "Введены неверные данные.";
             }
-
-        } catch (PDOException $exception) {
+        }
+        catch (PDOException $exception) {
 
             return "Ошибка: " . $exception -> getMessage();
         }
