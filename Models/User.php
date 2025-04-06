@@ -2,18 +2,18 @@
 
 class User {
 
-    private int $id;
-
-    private string $name, $email, $password, $phone_num;
-
-    private bool $is_confirmed;
-
     private PDO $pdo;
 
     public function __construct() {
 
-        $this->pdo = new PDO('psql:host=localhost;dbname=shop', 'postgres', 'Hjccbzlkzheccrb[');
-        $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        try {
+            $this->pdo = new PDO('psql:host=localhost;dbname=shop', 'postgres', 'Hjccbzlkzheccrb[');
+            $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        }
+        catch (PDOException $exception) {
+
+            return "Ошибка: " . $exception->getMessage();
+        }
     }
 
     public function registerUser($email, $password) {

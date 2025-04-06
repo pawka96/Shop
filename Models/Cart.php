@@ -4,7 +4,7 @@ class Cart
 {
     private User $user;
 
-    private int $id, $user_id;
+    private int $user_id;
 
     private PDO $pdo;
 
@@ -46,7 +46,8 @@ class Cart
                         $itemExist['id']]);
 
                     return "Данные в корзине обновлены.";
-                } else {
+                }
+                else {
 
                     // иначе добавление нового товара в корзину
 
@@ -55,12 +56,89 @@ class Cart
 
                     return "Товар успешно добавлен в корзину.";
                 }
-            } else {
+            }
+            else {
 
                 return "Товар не найден.";
             }
-
         } 
+        catch (PDOException $exception) {
+
+            return "Ошибка: " . $exception->getMessage();
+        }
+    }
+
+    public function removeItem($item_id) {
+
+        try {
+
+            $stmt = $this->pdo->prepare('DELETE FROM cart WHERE item_id = ? AND user_id = ?');
+            $stmt->execute([$item_id, $this->user_id]);
+
+            return "Товар удален из корзины.";
+        }
+        catch (PDOException $exception) {
+
+            return "Ошибка: " . $exception->getMessage();
+        }
+    }
+
+    public function cleanCart() {
+
+        try {
+
+            $stmt = $this->pdo->prepare('DELETE FROM cart WHERE user_id = ?');
+            $stmt->execute([$this->user_id]);
+
+            return "Корзина полностью очищена.";
+        }
+        catch (PDOException $exception) {
+
+            return "Ошибка: " . $exception->getMessage();
+        }
+    }
+
+    public function showItems() {
+
+        try {
+
+            $stmt = $this->pdo->prepare('SELECT "item".name, cart.quantity, cart.total_sum FROM cart
+                                                JOIN "item" ON "item".id = cart.item_id WHERE cart.user_id = ?');
+            $stmt->execute([$this->user_id]);
+            $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            if ($items) {
+
+                return $items;
+            }
+            else {
+
+                return "Ваша корзина пуста.";
+            }
+        }
+        catch (PDOException $exception) {
+
+            return "Ошибка: " . $exception->getMessage();
+        }
+    }
+
+    public function getTotalSum() {
+
+        try {
+
+            $stmt = $this->pdo->prepare('SELECT SUM(total_sum) as total FROM cart WHERE user_id = ?');
+            $stmt->execute([$this->user_id]);
+            $total_sum = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($total_sum) {
+
+                return "Полная сумма покупки: " . $total_sum['total'];
+            }
+            else {
+
+                return "Ваша корзина пуста.";
+            }
+        }
         catch (PDOException $exception) {
 
             return "Ошибка: " . $exception->getMessage();
