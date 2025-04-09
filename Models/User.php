@@ -2,6 +2,8 @@
 
 class User {
 
+    private int $id;
+
     private PDO $pdo;
 
     public function __construct() {
@@ -16,7 +18,12 @@ class User {
         }
     }
 
-    public function registerUser($email, $password) {
+    public function getId() {
+
+        return $this->id;
+    }
+
+    public function registerUser($email, $password, $name, $phone_num) {
 
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 
@@ -30,7 +37,7 @@ class User {
 
             if ($stmt->rowCount() > 0) {
 
-                return "Такой Email уже существует.";
+                return "Такой Email уже зарегестрирован.";
             }
             else {
 
@@ -40,8 +47,10 @@ class User {
                 }
 
                 $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
-                $stmt = $this->pdo->prepare('INSERT INTO "user" ("email", "password") VALUES (?, ?)');
-                $stmt->execute([$email, $hashedPassword]);
+                $stmt = $this->pdo->prepare('INSERT INTO "user" (email, password, name, phone_num)
+                                                    VALUES (?, ?, ?, ?) RETURNING id');
+                $stmt->execute([$email, $hashedPassword, $name, $phone_num]);
+                $this->id = $stmt->fetchColumn();
 
                 return "Вы успешно зарегистрированы.";
             }

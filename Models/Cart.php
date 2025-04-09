@@ -1,19 +1,36 @@
 <?php
 
-class Cart
-{
-    private User $user;
+class Cart {
 
-    private int $user_id;
+    private int $id;
+
+    private User $user;
 
     private PDO $pdo;
 
-    public function __construct($user)
+    public function __construct(User $user)
     {
 
         $this->user = $user;
-        $this->user_id = $user->id;
-        $this->pdo = $user->pdo;
+
+        try {
+            $this->pdo = new PDO('psql:host=localhost;dbname=shop', 'postgres', 'Hjccbzlkzheccrb[');
+            $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        }
+        catch (PDOException $exception) {
+
+            return "Ошибка: " . $exception->getMessage();
+        }
+    }
+
+    public function getUser() {
+
+        return $this->user;
+    }
+
+    public function getId() {
+
+        return $this->id;
     }
 
     public function addItem($item_id, $quantity) {
@@ -33,7 +50,7 @@ class Cart
                 // проверка на то, есть ли этот товар уже в корзине
 
                 $stmt = $this->pdo->prepare('SELECT id, quantity, total_sum FROM cart WHERE user_id = ? AND item_id = ?');
-                $stmt->execute([$this->user_id, $item_id]);
+                $stmt->execute([$this->user->getId(), $item_id]);
                 $itemExist = $stmt->fetch(PDO::FETCH_ASSOC);
 
                 if ($itemExist) {
@@ -51,8 +68,10 @@ class Cart
 
                     // иначе добавление нового товара в корзину
 
-                    $stmt = $this->pdo->prepare('INSERT INTO cart (user_id, item_id, quantity, total_sum) VALUES (?, ?, ?, ?)');
-                    $stmt->execute([$this->user_id, $item_id, $quantity, $total_sum]);
+                    $stmt = $this->pdo->prepare('INSERT INTO cart (user_id, item_id, quantity, total_sum)
+                                                        VALUES (?, ?, ?, ?) RETURNING id');
+                    $stmt->execute([$this->user->getId(), $item_id, $quantity, $total_sum]);
+                    $this->id = $stmt->fetchColumn();
 
                     return "Товар успешно добавлен в корзину.";
                 }
@@ -73,7 +92,7 @@ class Cart
         try {
 
             $stmt = $this->pdo->prepare('DELETE FROM cart WHERE item_id = ? AND user_id = ?');
-            $stmt->execute([$item_id, $this->user_id]);
+            $stmt->execute([$item_id, $this->user->getId()]);
 
             return "Товар удален из корзины.";
         }
@@ -88,7 +107,7 @@ class Cart
         try {
 
             $stmt = $this->pdo->prepare('DELETE FROM cart WHERE user_id = ?');
-            $stmt->execute([$this->user_id]);
+            $stmt->execute([$this->user->getId()]);
 
             return "Корзина полностью очищена.";
         }
@@ -104,7 +123,7 @@ class Cart
 
             $stmt = $this->pdo->prepare('SELECT "item".name, cart.quantity, cart.total_sum FROM cart
                                                 JOIN "item" ON "item".id = cart.item_id WHERE cart.user_id = ?');
-            $stmt->execute([$this->user_id]);
+            $stmt->execute([$this->user->getId()]);
             $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             if ($items) {
@@ -127,7 +146,7 @@ class Cart
         try {
 
             $stmt = $this->pdo->prepare('SELECT SUM(total_sum) as total FROM cart WHERE user_id = ?');
-            $stmt->execute([$this->user_id]);
+            $stmt->execute([$this->user->getId()]);
             $total_sum = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if ($total_sum) {

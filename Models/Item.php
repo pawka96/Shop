@@ -25,9 +25,8 @@ class Item {
 
             $stmt = $this->pdo->prepare('SELECT COUNT(*) FROM "item" WHERE name = ? AND brand = ?');
             $stmt->execute([$name, $brand]);
-            $count = $stmt->fetchColumn();
 
-            if ($count > 0) {
+            if ($stmt->fetchColumn() > 0) {
 
                 return "Такой товар уже существует.";
             }
@@ -38,7 +37,7 @@ class Item {
                 $stmt->execute([$category_id, $name, $brand, $price, $description]);
                 $this->id = $stmt->fetchColumn();
 
-                return "Товар успешно добавлен в БД.";
+                return "Новый товар успешно добавлен в БД.";
             }
         }
         catch (PDOException $exception) {
@@ -53,8 +52,10 @@ class Item {
 
             if ($this->id) {
 
-                $stmt = $this->pdo->prepare('SELECT "item".name, "item".brand, "item".price, "item".description, category.name
-                                            FROM "item" JOIN category ON category.id = "item".category_id WHERE item.id = ?');
+                $stmt = $this->pdo->prepare('SELECT "item".name, "item".brand, "item".price,
+                                                    "item".description, category.name FROM "item"
+                                                    JOIN category ON category.id = "item".category_id
+                                                    WHERE item.id = ?');
                 $stmt->execute([$this->id]);
                 $item = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -62,7 +63,7 @@ class Item {
             }
             else {
 
-                return "Товар не найден.";
+                return "Такого товара нет в БД.";
             }
         }
         catch (PDOException $exception) {
