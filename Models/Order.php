@@ -21,8 +21,18 @@ class Order {
         }
         catch (PDOException $exception) {
 
-            return "Ошибка: " . $exception->getMessage();
+            throw new Exception("Ошибка при подключении к БД: " . $exception->getMessage());;
         }
+    }
+
+    public function getId(): int {
+
+        return $this->id;
+    }
+
+    public function getCart(): Cart {
+
+        return $this->cart;
     }
 
     public function createOrder() {
@@ -33,7 +43,8 @@ class Order {
 
             $stmt = $this->pdo->prepare('SELECT cart.total_sum FROM cart
                                                 JOIN "user" ON "user".id = cart.user_id
-                                                WHERE "user".id = ? AND cart.id = ?');
+                                                WHERE "user".id = ? AND cart.id = ?'); // возможно стоит cart.id убрать
+
             $stmt->execute([$this->user->getId(), $this->cart->getId()]);
 
             if ($total_sum = $stmt->fetchColumn()) {
@@ -53,7 +64,7 @@ class Order {
         }
         catch (PDOException $exception) {
 
-            return "Ошибка: " . $exception->getMessage();
+            throw new Exception("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
 
@@ -70,22 +81,26 @@ class Order {
                                                     "order".date, "order".total_sum, "order".status FROM "order"
                                                     JOIN "user" ON "user".id = "order".user_id
                                                     WHERE "order".id = ? AND "user".id = ?');
+
                 $stmt->execute([$this->id, $this->user->getId()]);
 
                 if ($order = $stmt->fetch(PDO::FETCH_ASSOC)) {
 
                     return $order;
-                } else {
+                }
+                else {
 
                     return "С таким заказом пользователь не найден.";
                 }
-            } else {
+            }
+            else {
 
                 return "Такого заказа нет.";
             }
-        } catch (PDOException $exception) {
+        }
+        catch (PDOException $exception) {
 
-            return "Ошибка: " . $exception->getMessage();
+            throw new Exception("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
 
@@ -99,10 +114,12 @@ class Order {
 
                     $stmt = $this->pdo->prepare('UPDATE "order" SET "status" = ? WHERE id = ?');
                     $stmt->execute([$status, $this->id]);
+
+                    return "Новый статус заказа: " . $status;
                 }
                 catch (PDOException $exception) {
 
-                    return "Ошибка: " . $exception->getMessage();
+                    throw new Exception("Ошибка при работе с БД: " . $exception->getMessage());
                 }
             } else {
 
@@ -114,5 +131,26 @@ class Order {
             return "Неверный формат статуса.";
         }
     }
-    
+
+    public function deleteOrder() {
+
+        try {
+
+            if ($this->id) {
+
+                $stmt = $this->pdo->prepare('DELETE FROM "order" WHERE id = ?');
+                $stmt->execute([$this->id]);
+
+                return "Заказ успешно удален.";
+            }
+            else {
+
+                return "Такого заказа нет.";
+            }
+        }
+        catch (PDOException $exception) {
+
+            throw new Exception("Ошибка при работе с БД: " . $exception->getMessage());
+        }
+    }
 }

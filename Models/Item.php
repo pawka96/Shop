@@ -13,8 +13,13 @@ class Item {
         }
         catch (PDOException $exception) {
 
-            return "Ошибка: " . $exception->getMessage();
+            throw new Exception("Ошибка при подключении к БД: " . $exception->getMessage());
         }
+    }
+
+    public function getId(): int {
+
+        return $this->id;
     }
 
     public function createItem($name, $brand, $price, $category_id, $description) {
@@ -42,7 +47,7 @@ class Item {
         }
         catch (PDOException $exception) {
 
-            return "Ошибка: " . $exception->getMessage();
+            throw new Exception("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
 
@@ -68,7 +73,7 @@ class Item {
         }
         catch (PDOException $exception) {
 
-            return "Ошибка: " . $exception->getMessage();
+            throw new Exception("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
 
@@ -109,7 +114,7 @@ class Item {
         }
         catch (PDOException $exception) {
 
-            return "Ошибка: " . $exception->getMessage();
+            throw new Exception("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
 
@@ -131,7 +136,7 @@ class Item {
         }
         catch (PDOException $exception) {
 
-            return "Ошибка: " . $exception->getMessage();
+            throw new Exception("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
 }

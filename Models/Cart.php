@@ -19,16 +19,16 @@ class Cart {
         }
         catch (PDOException $exception) {
 
-            return "Ошибка: " . $exception->getMessage();
+            throw new Exception("Ошибка при подключении к БД: " . $exception->getMessage());;
         }
     }
 
-    public function getUser() {
+    public function getUser(): User {
 
         return $this->user;
     }
 
-    public function getId() {
+    public function getId(): int {
 
         return $this->id;
     }
@@ -83,7 +83,7 @@ class Cart {
         } 
         catch (PDOException $exception) {
 
-            return "Ошибка: " . $exception->getMessage();
+            return throw new Exception("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
 
@@ -98,7 +98,7 @@ class Cart {
         }
         catch (PDOException $exception) {
 
-            return "Ошибка: " . $exception->getMessage();
+            throw new Exception("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
 
@@ -113,7 +113,7 @@ class Cart {
         }
         catch (PDOException $exception) {
 
-            return "Ошибка: " . $exception->getMessage();
+            throw new Exception("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
 
@@ -123,6 +123,7 @@ class Cart {
 
             $stmt = $this->pdo->prepare('SELECT "item".name, cart.quantity, cart.total_sum FROM cart
                                                 JOIN "item" ON "item".id = cart.item_id WHERE cart.user_id = ?');
+
             $stmt->execute([$this->user->getId()]);
             $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -137,7 +138,7 @@ class Cart {
         }
         catch (PDOException $exception) {
 
-            return "Ошибка: " . $exception->getMessage();
+            throw new Exception("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
 
@@ -151,7 +152,7 @@ class Cart {
 
             if ($total_sum) {
 
-                return "Полная сумма покупки: " . $total_sum['total'];
+                return "Полная сумма товаров в корзине: " . $total_sum['total'];
             }
             else {
 
@@ -160,7 +161,7 @@ class Cart {
         }
         catch (PDOException $exception) {
 
-            return "Ошибка: " . $exception->getMessage();
+            throw new Exception("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
 }
