@@ -4,10 +4,10 @@ class UserController {
 
     private User $user;
 
-    public function __construct() {
+    public function __construct () {
 
-    $this->user = new User();
-}
+        $this->user = new User();
+    }
 
     public function register($request) {
 
@@ -16,37 +16,103 @@ class UserController {
         $name = $request['name'] ?? null;
         $phone_num = $request['phone_num'] ?? null;
 
-        $response = $this->user->registerUser($email, $password, $name, $phone_num);
+        if (empty($email) || empty($password) || empty ($name) || empty($phone_num)) {
 
-        // Форматируем ответ в соответствии с JSON API
-        return json_encode([
-            'data' => [
-                'type' => 'users',
-                'attributes' => [
+            // формирование ошибки в случае отсутствия данных
+
+            http_response_code(400);
+
+            return json_encode([
+                'status' => 'error',
+                'message' => 'Все поля должны быть заполнены.'
+            ]);
+        }
+        else {
+
+            // формирование ответа согласно JSON API
+
+            $response = $this->user->registerUser($email, $password, $name, $phone_num);
+
+            // в случае неудачной регистрации
+
+            if ($response === 'Некорректный email'
+                || $response === 'Такой Email уже зарегестрирован.'
+                || $response === 'Пароль должен содержать 8 и более символов.') {
+
+                http_response_code(400);
+
+                return json_encode([
+                    'status' => 'error',
                     'message' => $response
-                ]
-            ]
-        ]);
+
+                ]);
+            }
+            else {
+
+                // в случае успешной регистрации
+
+                http_response_code(200);
+
+                return json_encode([
+                    'data' => [
+                        'type' => 'user',
+                        'attributes' => [
+                            'message' => $response
+                        ]
+                    ]
+                ]);
+            }
+        }
     }
 
-
-    // Метод для аутентификации пользователя
     public function authenticate($request) {
 
         $email = $request['email'] ?? null;
         $password = $request['password'] ?? null;
 
-        $response = $this->user->authUser($email, $password);
+        if (empty($email) || empty($password)) {
 
-        // Форматируем ответ в соответствии с JSON API
-        return json_encode([
-            'data' => [
-                'type' => 'users',
-                'attributes' => [
+            // формирование ошибки в случае отсутствия данных
+
+            http_response_code(400);
+
+            return json_encode([
+               'status' => 'error',
+               'message' => 'Все поля должны быть заполнены.'
+            ]);
+        }
+        else {
+
+            // формирование ответа согласно JSON API
+
+            $response = $this->user->authUser($email, $password);
+
+            // в случае неудачной аутентификации
+
+            if ($response === 'Введены неверные данные.') {
+
+                http_response_code(401);
+
+                return json_encode([
+                    'status' => 'error',
                     'message' => $response
-                ]
-            ]
-        ]);
+                ]);
+            }
+            else {
+
+                // в случае успешной аутентификации
+
+                http_response_code(200);
+
+                return json_encode([
+                    'data' => [
+                        'type' => 'user',
+                        'attributes' => [
+                            'message' => $response
+                        ]
+                    ]
+                ]);
+            }
+        }
     }
 }
-
