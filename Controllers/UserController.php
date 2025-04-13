@@ -4,9 +4,9 @@ class UserController {
 
     private User $user;
 
-    public function __construct () {
+    public function __construct (User $user) {
 
-        $this->user = new User();
+        $this->user = $user;
     }
 
     public function register($request) {
@@ -16,7 +16,7 @@ class UserController {
         $name = $request['name'] ?? null;
         $phone_num = $request['phone_num'] ?? null;
 
-        if (empty($email) || empty($password) || empty ($name) || empty($phone_num)) {
+        if (empty($email) || empty($password) || empty($name) || empty($phone_num)) {
 
             // формирование ошибки в случае отсутствия данных
 
@@ -29,7 +29,7 @@ class UserController {
         }
         else {
 
-            // формирование ответа согласно JSON API
+            // формирование ответа
 
             $response = $this->user->registerUser($email, $password, $name, $phone_num);
 
@@ -83,7 +83,7 @@ class UserController {
         }
         else {
 
-            // формирование ответа согласно JSON API
+            // формирование ответа
 
             $response = $this->user->authUser($email, $password);
 

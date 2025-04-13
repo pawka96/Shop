@@ -83,7 +83,7 @@ class Cart {
         } 
         catch (PDOException $exception) {
 
-            return throw new Exception("Ошибка при работе с БД: " . $exception->getMessage());
+            throw new Exception("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
 
@@ -91,10 +91,23 @@ class Cart {
 
         try {
 
-            $stmt = $this->pdo->prepare('DELETE FROM cart WHERE item_id = ? AND user_id = ?');
-            $stmt->execute([$item_id, $this->user->getId()]);
+            // проверка наличия товара в БД
 
-            return "Товар удален из корзины.";
+            $stmt = $this->pdo->prepare('SELECT * FROM item WHERE id = ?');
+            $stmt->execute([$item_id]);
+            $item = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($item) {
+
+                $stmt = $this->pdo->prepare('DELETE FROM cart WHERE item_id = ? AND user_id = ?');
+                $stmt->execute([$item_id, $this->user->getId()]);
+
+                return "Товар удален из корзины.";
+            }
+            else {
+
+                return "Товар не найден.";
+            }
         }
         catch (PDOException $exception) {
 
@@ -102,7 +115,7 @@ class Cart {
         }
     }
 
-    public function cleanCart() {
+    public function clearCart() {
 
         try {
 
