@@ -14,7 +14,8 @@ class Category {
         }
         catch (PDOException $exception) {
 
-            throw new Exception("Ошибка при подключении к БД: " . $exception->getMessage());
+            error_log($exception->getMessage());
+            throw new ServerException("Ошибка при подключении к БД: " . $exception->getMessage());
         }
     }
 
@@ -42,7 +43,8 @@ class Category {
         }
         catch (PDOException $exception) {
 
-            throw new Exception("Ошибка при работе с БД: " . $exception->getMessage());
+            error_log($exception->getMessage());
+            throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
 
@@ -69,7 +71,8 @@ class Category {
         }
         catch (PDOException $exception) {
 
-            throw new Exception("Ошибка при работе с БД: " . $exception->getMessage());
+            error_log($exception->getMessage());
+            throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
 
@@ -111,7 +114,8 @@ class Category {
         }
         catch (PDOException $exception) {
 
-            return  "Ошибка: " . $exception->getMessage();
+            error_log($exception->getMessage());
+            return  "Ошибка при работе с БД: " . $exception->getMessage();
         }
     }
 
@@ -135,7 +139,8 @@ class Category {
         }
         catch (PDOException $exception) {
 
-            throw new Exception("Ошибка при работе с БД: " . $exception->getMessage());
+            error_log($exception->getMessage());
+            throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
 }

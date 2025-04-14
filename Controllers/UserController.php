@@ -11,6 +11,7 @@ class UserController {
 
     public function register($request) {
 
+
         $email = $request['email'] ?? null;
         $password = $request['password'] ?? null;
         $name = $request['name'] ?? null;
@@ -29,38 +30,44 @@ class UserController {
         }
         else {
 
-            // формирование ответа
+            try {
 
-            $response = $this->user->registerUser($email, $password, $name, $phone_num);
+                // формирование ответа
 
-            // в случае неудачной регистрации
+                $response = $this->user->registerUser($email, $password, $name, $phone_num);
 
-            if ($response === 'Некорректный email'
-                || $response === 'Такой Email уже зарегестрирован.'
-                || $response === 'Пароль должен содержать 8 и более символов.') {
+                // в случае неудачной регистрации
 
-                http_response_code(400);
+                if ($response === 'Некорректный email'
+                    || $response === 'Такой Email уже зарегистрирован.'
+                    || $response === 'Пароль должен содержать 8 и более символов.') {
 
-                return json_encode([
-                    'status' => 'error',
-                    'message' => $response
+                    http_response_code(400);
 
-                ]);
-            }
-            else {
+                    return json_encode([
+                        'status' => 'error',
+                        'message' => $response
 
-                // в случае успешной регистрации
+                    ]);
+                } else {
 
-                http_response_code(200);
+                    // в случае успешной регистрации
 
-                return json_encode([
-                    'data' => [
-                        'type' => 'user',
-                        'attributes' => [
-                            'message' => $response
+                    http_response_code(200);
+
+                    return json_encode([
+                        'data' => [
+                            'type' => 'user',
+                            'attributes' => [
+                                'message' => $response
+                            ]
                         ]
-                    ]
-                ]);
+                    ]);
+                }
+            }
+            catch (ServerException $exception) {
+
+               return $exception->handle();
             }
         }
     }
@@ -83,35 +90,42 @@ class UserController {
         }
         else {
 
-            // формирование ответа
+            try {
 
-            $response = $this->user->authUser($email, $password);
+                // формирование ответа
 
-            // в случае неудачной аутентификации
+                $response = $this->user->authUser($email, $password);
 
-            if ($response === 'Введены неверные данные.') {
+                // в случае неудачной аутентификации
 
-                http_response_code(401);
+                if ($response === 'Введены неверные данные.') {
 
-                return json_encode([
-                    'status' => 'error',
-                    'message' => $response
-                ]);
-            }
-            else {
+                    http_response_code(401);
 
-                // в случае успешной аутентификации
+                    return json_encode([
+                        'status' => 'error',
+                        'message' => $response
+                    ]);
+                }
+                else {
 
-                http_response_code(200);
+                    // в случае успешной аутентификации
 
-                return json_encode([
-                    'data' => [
-                        'type' => 'user',
-                        'attributes' => [
-                            'message' => $response
+                    http_response_code(200);
+
+                    return json_encode([
+                        'data' => [
+                            'type' => 'user',
+                            'attributes' => [
+                                'message' => $response
+                            ]
                         ]
-                    ]
-                ]);
+                    ]);
+                }
+            }
+            catch (ServerException $exception) {
+
+                return $exception->handle();
             }
         }
     }

@@ -13,7 +13,8 @@ class Item {
         }
         catch (PDOException $exception) {
 
-            throw new Exception("Ошибка при подключении к БД: " . $exception->getMessage());
+            error_log($exception->getMessage());
+            throw new ServerException("Ошибка при подключении к БД: " . $exception->getMessage());
         }
     }
 
@@ -47,7 +48,8 @@ class Item {
         }
         catch (PDOException $exception) {
 
-            throw new Exception("Ошибка при работе с БД: " . $exception->getMessage());
+            error_log($exception->getMessage());
+            throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
 
@@ -68,12 +70,13 @@ class Item {
             }
             else {
 
-                return "Такого товара нет в БД.";
+                throw new PDOException("Ошибка при работе с БД: товар не найден.");
             }
         }
         catch (PDOException $exception) {
 
-            throw new Exception("Ошибка при работе с БД: " . $exception->getMessage());
+            error_log($exception->getMessage());
+            throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
 
@@ -83,38 +86,32 @@ class Item {
 
             if ($this->id) {
 
-                if (empty($data)) {
+                // формирование частей последующего запроса к БД и соответствующих им значений
 
-                    return "Нет данных для добавления.";
+                $keys = [];
+                $values = [];
+
+                foreach ($data as $key => $value) {
+
+                    $keys[] = "$key = ?";
+                    $values[] = $value;
                 }
-                else {
 
-                    // формирование частей последующего запроса к БД и соответствующих им значений
+                $sql = 'UPDATE "item" SET ' . implode(", ", $keys) . ' WHERE id = ?';
+                $stmt = $this->pdo->prepare($sql);
+                $stmt->execute([...$values, $this->id]);
 
-                    $keys = [];
-                    $values = [];
-
-                    foreach ($data as $key => $value) {
-
-                        $keys[] = "$key = ?";
-                        $values[] = $value;
-                    }
-
-                    $sql = 'UPDATE "item" SET ' . implode(", ", $keys) . ' WHERE id = ?';
-                    $stmt = $this->pdo->prepare($sql);
-                    $stmt->execute([...$values, $this->id]);
-
-                    return "Данные товара успешно обновлены.";
-                }
+                return "Данные товара успешно обновлены.";
             }
             else {
 
-                return "Товар не найден.";
+                throw new ServerException("Ошибка при работе с БД: товар не найден.");
             }
         }
         catch (PDOException $exception) {
 
-            throw new Exception("Ошибка при работе с БД: " . $exception->getMessage());
+            error_log($exception->getMessage());
+            throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
 
@@ -131,12 +128,13 @@ class Item {
             }
             else {
 
-                return "Товар не найден.";
+                throw new ServerException("Ошибка при работе с БД: товар не найден.");
             }
         }
         catch (PDOException $exception) {
 
-            throw new Exception("Ошибка при работе с БД: " . $exception->getMessage());
+            error_log($exception->getMessage());
+            throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
 }

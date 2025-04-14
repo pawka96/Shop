@@ -14,7 +14,7 @@ class CartController {
         $item_id = $request['item_id'] ?? null;
         $quantity = $request['quantity'] ?? null;
 
-        // валидация данных
+        // валидация данных запроса
 
         if (!is_numeric($item_id) || !is_numeric($quantity) || $quantity <= 0) {
 
@@ -43,7 +43,8 @@ class CartController {
                         'status' => 'error',
                         'message' => $response
                     ]);
-                } else {
+                }
+                else {
 
                     // в случае успешного добавления
 
@@ -52,21 +53,16 @@ class CartController {
                     return json_encode([
                         'data' => [
                             'type' => 'cart',
-                            'attributes' => $response
+                            'attributes' => [
+                                'message' => $response
+                            ]
                         ]
                     ]);
                 }
             }
-            catch (Exception $exception) {
+            catch (ServerException $exception) {
 
-                error_log($exception->getMessage());
-
-                http_response_code(500);
-
-                return json_encode([
-                    'status' => 'error',
-                    'message' => 'Произошла ошибка на сервере.'
-                ]);
+                return $exception->handle();
             }
         }
     }
@@ -114,21 +110,16 @@ class CartController {
                     return json_encode([
                        'data' => [
                            'type' => 'cart',
-                           'attributes' => $response
+                           'attributes' => [
+                               'message' => $response
+                           ]
                        ]
                     ]);
                 }
             }
-            catch (Exception $exception) {
+            catch (ServerException $exception) {
 
-                error_log($exception->getMessage());
-
-                http_response_code(500);
-
-                return json_encode([
-                    'status' => 'error',
-                    'message' => 'Ошибка на сервере.'
-                ]);
+                return $exception->handle();
             }
         }
     }
@@ -139,21 +130,110 @@ class CartController {
 
             $response = $this->cart->clearCart();
 
-            if ($response)
+            if ($response === 'Ваша корзины пуста.') {
 
+                // в случае пустой корзины
+
+                http_response_code(404);
+
+                return json_encode([
+                   'status' => 'error',
+                   'message' => $response
+                ]);
+            }
+            else {
+
+                // в случае успешной очистки корзины
+
+                http_response_code(204);
+
+                return json_encode([
+                    'data' => [
+                        'type' => 'cart',
+                        'attributes' => [
+                            'message' => $response
+                        ]
+                    ]
+                ]);
+            }
         }
-        catch (Exception $exception) {
+        catch (ServerException $exception) {
 
-            error_log($exception->getMessage());
-
-            http_response_code(500);
-
-            return json_encode([
-                'status' => 'error',
-                'message' => 'Ошибка на сервере.'
-            ]);
+            return $exception->handle();
         }
+    }
 
+    public function show() {
 
+        try {
+
+            // формирование ответа
+
+            $response = $this->cart->showItems();
+
+            if ($response === 'Ваша корзина пуста.') {
+
+                http_response_code(404);
+
+                return json_encode([
+                   'status' => 'error',
+                   'message' => $response
+                ]);
+            }
+            else {
+
+                http_response_code(200);
+
+                return json_encode([
+                   'data' => [
+                       'type' => 'cart',
+                       'attributes' => [
+                           'message' => $response
+                       ]
+                   ]
+                ]);
+            }
+        }
+        catch (ServerException $exception) {
+
+            return $exception->handle();
+        }
+    }
+
+    public function getSum() {
+
+        try {
+
+            // формирование ответа
+
+            $response = $this->cart->getTotalSum();
+
+            if ($response === 'Ваша корзина пуста.') {
+
+                http_response_code(404);
+
+                return json_encode([
+                    'status' => 'error',
+                    'message' => $response
+                ]);
+            }
+            else {
+
+                http_response_code(201);
+
+                return json_encode([
+                   'data' => [
+                       'type' => 'cart',
+                       'attributes' => [
+                           'message' => $response
+                       ]
+                   ]
+                ]);
+            }
+        }
+        catch (ServerException $exception) {
+
+            return $exception->handle();
+        }
     }
 }

@@ -19,7 +19,8 @@ class Cart {
         }
         catch (PDOException $exception) {
 
-            throw new Exception("Ошибка при подключении к БД: " . $exception->getMessage());;
+            error_log($exception->getMessage());
+            throw new ServerException("Ошибка при подключении к БД: " . $exception->getMessage());;
         }
     }
 
@@ -83,7 +84,8 @@ class Cart {
         } 
         catch (PDOException $exception) {
 
-            throw new Exception("Ошибка при работе с БД: " . $exception->getMessage());
+            error_log($exception->getMessage());
+            throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
 
@@ -111,7 +113,8 @@ class Cart {
         }
         catch (PDOException $exception) {
 
-            throw new Exception("Ошибка при работе с БД: " . $exception->getMessage());
+            error_log($exception->getMessage());
+            throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
 
@@ -119,14 +122,29 @@ class Cart {
 
         try {
 
-            $stmt = $this->pdo->prepare('DELETE FROM cart WHERE user_id = ?');
+            // проверка пуста ли корзины
+
+            $stmt = $this->pdo->prepare('SELECT COUNT(*) FROM cart WHERE user_id = ?');
             $stmt->execute([$this->user->getId()]);
 
-            return "Корзина полностью очищена.";
+            if ($stmt->fetchColumn() > 0) {
+
+                // очищение корзины
+
+                $stmt = $this->pdo->prepare('DELETE FROM cart WHERE user_id = ?');
+                $stmt->execute([$this->user->getId()]);
+
+                return "Корзина полностью очищена.";
+            }
+            else {
+
+                return "Ваша корзины пуста.";
+            }
         }
         catch (PDOException $exception) {
 
-            throw new Exception("Ошибка при работе с БД: " . $exception->getMessage());
+            error_log($exception->getMessage());
+            throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
 
@@ -151,7 +169,8 @@ class Cart {
         }
         catch (PDOException $exception) {
 
-            throw new Exception("Ошибка при работе с БД: " . $exception->getMessage());
+            error_log($exception->getMessage());
+            throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
 
@@ -174,7 +193,8 @@ class Cart {
         }
         catch (PDOException $exception) {
 
-            throw new Exception("Ошибка при работе с БД: " . $exception->getMessage());
+            error_log($exception->getMessage());
+            throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
 }
