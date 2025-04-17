@@ -25,36 +25,33 @@ class ItemController {
 
             try {
 
-                // формирование ответа
+                // формирование ответа при успешном создании
 
                 $response = $this->item->createItem($name, $brand, $price, $category_id, $description);
+                http_response_code(201);
 
-                if ($response === 'Такой товар уже существует.') {
-
-                    http_response_code(400);
-
-                    return json_encode([
-                       'status' => 'error',
-                       'message' => $response
-                    ]);
-                }
-                else {
-
-                    http_response_code(201);
-
-                    return json_encode([
-                        'data' => [
-                            'type' => 'item',
-                            'attribute' => [
-                                'message' => $response
-                            ]
+                return json_encode([
+                    'data' => [
+                        'type' => 'item',
+                        'attributes' => [
+                            'message' => $response
                         ]
-                    ]);
-                }
+                    ]
+                ]);
             }
             catch (ServerException $exception) {
 
                 return $exception->handle();
+            }
+            catch (Exception $exception) {
+
+                error_log($exception->getMessage());
+                http_response_code(500);
+
+                return json_encode([
+                    'status' => 'error',
+                    'message' => $exception->getMessage()
+                ]);
             }
         }
         else {
@@ -72,36 +69,38 @@ class ItemController {
 
         try {
 
-            // формирование ответа
+            // формирование успешного ответа
 
             $response = $this->item->readItem();
+            http_response_code(200);
 
-            if ($response === ServerException::class) {
-
-                http_response_code(404);
-
-                return json_encode([
-                    'status' => 'error',
-                    'message' => $response
-                ]);
-            }
-            else {
-
-                http_response_code(200);
-
-                return json_encode([
-                    'data' => [
-                        'type' => 'item',
-                        'attribute' => [
-                            'message' => $response
-                        ]
+            return json_encode([
+                'data' => [
+                    'type' => 'item',
+                    'id' => $this->item->getId(),
+                    'attributes' => [
+                        'name' => $response['name'],
+                        'brand' => $response['brand'],
+                        'price' => $response['price'],
+                        'category_name' => $response['category'],
+                        'description' => $response['description']
                     ]
-                ]);
-            }
+                ]
+            ]);
         }
         catch (ServerException $exception) {
 
             return $exception->handle();
+        }
+        catch (Exception $exception) {
+
+            error_log($exception->getMessage());
+            http_response_code(500);
+
+            return json_encode([
+                'status' => 'error',
+                'message' => $exception->getMessage()
+            ]);
         }
     }
 
@@ -124,40 +123,33 @@ class ItemController {
 
             try {
 
-                // формирование ответа
+                // формирование ответа при успешном обновлении данных
 
                 $response = $this->item->updateItem($data);
+                http_response_code(200);
 
-                if ($response === 'Товар не найден.') {
-
-                    // в случае отсутствия товара
-
-                    http_response_code(404);
-
-                    return json_encode([
-                        'status' => 'error',
-                        'message' => $response
-                    ]);
-                }
-                else {
-
-                    // при успешном обновлении данных
-
-                    http_response_code(202);
-
-                    return json_encode([
-                        'data' => [
-                            'type' => 'item',
-                            'attribute' => [
-                                'message' => $response
-                            ]
+                return json_encode([
+                    'data' => [
+                        'type' => 'item',
+                        'attributes' => [
+                            'message' => $response
                         ]
-                    ]);
-                }
+                    ]
+                ]);
             }
             catch (ServerException $exception) {
 
                 return $exception->handle();
+            }
+            catch (Exception $exception) {
+
+                error_log($exception->getMessage());
+                http_response_code(500);
+
+                return json_encode([
+                    'status' => 'error',
+                    'message' => $exception->getMessage()
+                ]);
             }
         }
     }
@@ -166,40 +158,34 @@ class ItemController {
 
         try {
 
-            // формирование ответа
+            // формирование ответа при успешном удалении
 
             $response = $this->item->deleteItem();
 
-            if ($response === 'Товар не найден.') {
+            http_response_code(200);
 
-                // в случае отсутствия товара
-
-                http_response_code(404);
-
-                return json_encode([
-                    'status' => 'error',
-                    'message' => $response
-                ]);
-            }
-            else {
-
-                // в случае успешного удаления
-
-                http_response_code(204);
-
-                return json_encode([
-                    'data' => [
-                        'type' => 'item',
-                        'attribute' => [
-                            'message' => $response
-                        ]
+            return json_encode([
+                'data' => [
+                    'type' => 'item',
+                    'attribute' => [
+                        'message' => $response
                     ]
-                ]);
-            }
+                ]
+            ]);
         }
         catch (ServerException $exception) {
 
             return $exception->handle();
+        }
+        catch (Exception $exception) {
+
+            error_log($exception->getMessage());
+            http_response_code(500);
+
+            return json_encode([
+                'status' => 'error',
+                'message' => $exception->getMessage()
+            ]);
         }
     }
 }

@@ -28,7 +28,7 @@ class User {
 
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 
-            return "Некорректный email.";
+            throw new ServerException("Ошибка при регистрации: email не прошел валидацию.");
         }
 
         try {
@@ -38,14 +38,15 @@ class User {
 
             if ($stmt->rowCount() > 0) {
 
-                return "Такой Email уже зарегестрирован.";
+                throw new ServerException("Ошибка при регистрации: такой email уже зарегистрирован.");
+            }
+            elseif (strlen($password) < 8) {
+
+                throw new ServerException("Ошибка при регистрации: пароль должен содержать 8 и более символов.");
             }
             else {
 
-                if (strlen($password) < 8) {
-
-                    return "Пароль должен содержать 8 и более символов.";
-                }
+                // при успешной регистрации
 
                 $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
                 $stmt = $this->pdo->prepare('INSERT INTO "user" (email, password, name, phone_num)
@@ -58,7 +59,6 @@ class User {
         }
         catch (PDOException $exception) {
 
-            error_log($exception->getMessage());
             throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
@@ -77,12 +77,11 @@ class User {
             }
             else {
 
-                return "Введены неверные данные.";
+                throw new ServerException("Ошибка при аутентификации: введены неверные данные.");
             }
         }
         catch (PDOException $exception) {
 
-            error_log($exception->getMessage());
             throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }

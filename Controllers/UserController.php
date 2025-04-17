@@ -32,42 +32,33 @@ class UserController {
 
             try {
 
-                // формирование ответа
+                // формирование ответа при успешной регистрации
 
                 $response = $this->user->registerUser($email, $password, $name, $phone_num);
+                http_response_code(200);
 
-                // в случае неудачной регистрации
-
-                if ($response === 'Некорректный email'
-                    || $response === 'Такой Email уже зарегистрирован.'
-                    || $response === 'Пароль должен содержать 8 и более символов.') {
-
-                    http_response_code(400);
-
-                    return json_encode([
-                        'status' => 'error',
-                        'message' => $response
-
-                    ]);
-                } else {
-
-                    // в случае успешной регистрации
-
-                    http_response_code(200);
-
-                    return json_encode([
-                        'data' => [
-                            'type' => 'user',
-                            'attributes' => [
-                                'message' => $response
-                            ]
+                return json_encode([
+                    'data' => [
+                        'type' => 'user',
+                        'attributes' => [
+                            'message' => $response
                         ]
-                    ]);
-                }
+                    ]
+                ]);
             }
             catch (ServerException $exception) {
 
                return $exception->handle();
+            }
+            catch (Exception $exception) {
+
+                error_log($exception->getMessage());
+                http_response_code(500);
+
+                return json_encode([
+                    'status' => 'error',
+                    'message' => $exception->getMessage()
+                ]);
             }
         }
     }
@@ -92,40 +83,33 @@ class UserController {
 
             try {
 
-                // формирование ответа
+                // формирование ответа при успешной аутентификации
 
                 $response = $this->user->authUser($email, $password);
+                http_response_code(200);
 
-                // в случае неудачной аутентификации
-
-                if ($response === 'Введены неверные данные.') {
-
-                    http_response_code(401);
-
-                    return json_encode([
-                        'status' => 'error',
-                        'message' => $response
-                    ]);
-                }
-                else {
-
-                    // в случае успешной аутентификации
-
-                    http_response_code(200);
-
-                    return json_encode([
-                        'data' => [
-                            'type' => 'user',
-                            'attributes' => [
-                                'message' => $response
-                            ]
+                return json_encode([
+                    'data' => [
+                        'type' => 'user',
+                        'attributes' => [
+                            'message' => $response
                         ]
-                    ]);
-                }
+                    ]
+                ]);
             }
             catch (ServerException $exception) {
 
                 return $exception->handle();
+            }
+            catch (Exception $exception) {
+
+                error_log($exception->getMessage());
+                http_response_code(500);
+
+                return json_encode([
+                    'status' => 'error',
+                    'message' => $exception->getMessage()
+                ]);
             }
         }
     }

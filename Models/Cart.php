@@ -79,12 +79,11 @@ class Cart {
             }
             else {
 
-                return "Товар не найден.";
+                throw new ServerException("Ошибка при работе с БД: товар не найден.");
             }
         } 
         catch (PDOException $exception) {
 
-            error_log($exception->getMessage());
             throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
@@ -108,12 +107,11 @@ class Cart {
             }
             else {
 
-                return "Товар не найден.";
+                throw new ServerException("Ошибка при работе с БД: товар не найден.");
             }
         }
         catch (PDOException $exception) {
 
-            error_log($exception->getMessage());
             throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
@@ -143,7 +141,6 @@ class Cart {
         }
         catch (PDOException $exception) {
 
-            error_log($exception->getMessage());
             throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
@@ -152,7 +149,7 @@ class Cart {
 
         try {
 
-            $stmt = $this->pdo->prepare('SELECT "item".name, cart.quantity, cart.total_sum FROM cart
+            $stmt = $this->pdo->prepare('SELECT "item".name, "item".brand, cart.quantity, "item".price FROM cart
                                                 JOIN "item" ON "item".id = cart.item_id WHERE cart.user_id = ?');
 
             $stmt->execute([$this->user->getId()]);
@@ -164,12 +161,11 @@ class Cart {
             }
             else {
 
-                return "Ваша корзина пуста.";
+                throw new ServerException("Ошибка при работе с БД: товары в корзине не найдены.");
             }
         }
         catch (PDOException $exception) {
 
-            error_log($exception->getMessage());
             throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
@@ -184,16 +180,15 @@ class Cart {
 
             if ($total_sum) {
 
-                return "Полная сумма товаров в корзине: " . $total_sum['total'];
+                return $total_sum;
             }
             else {
 
-                return "Ваша корзина пуста.";
+                throw new ServerException("Ошибка при работе с БД: товары в корзине не найдены.");
             }
         }
         catch (PDOException $exception) {
 
-            error_log($exception->getMessage());
             throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }

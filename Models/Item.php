@@ -34,7 +34,8 @@ class Item {
 
             if ($stmt->fetchColumn() > 0) {
 
-                return "Такой товар уже существует.";
+                throw new ServerException("Ошибка при работе с БД:
+                                                    товар с таким названием ($name) и такого бренда ($brand) уже существует.");
             }
             else {
 
@@ -48,7 +49,6 @@ class Item {
         }
         catch (PDOException $exception) {
 
-            error_log($exception->getMessage());
             throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
@@ -59,8 +59,8 @@ class Item {
 
             if ($this->id) {
 
-                $stmt = $this->pdo->prepare('SELECT "item".name, "item".brand, "item".price,
-                                                    "item".description, category.name FROM "item"
+                $stmt = $this->pdo->prepare('SELECT  "item".name, "item".brand, "item".price,
+                                                    "item".description, category.name as category FROM "item"
                                                     JOIN category ON category.id = "item".category_id
                                                     WHERE item.id = ?');
                 $stmt->execute([$this->id]);
@@ -70,12 +70,11 @@ class Item {
             }
             else {
 
-                throw new PDOException("Ошибка при работе с БД: товар не найден.");
+                throw new ServerException("Ошибка при работе с БД: товар не найден.");
             }
         }
         catch (PDOException $exception) {
 
-            error_log($exception->getMessage());
             throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
@@ -110,7 +109,6 @@ class Item {
         }
         catch (PDOException $exception) {
 
-            error_log($exception->getMessage());
             throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
@@ -133,7 +131,6 @@ class Item {
         }
         catch (PDOException $exception) {
 
-            error_log($exception->getMessage());
             throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
