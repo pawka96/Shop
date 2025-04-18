@@ -1,39 +1,33 @@
 <?php
 
-class ItemController {
+class OrderItemController {
 
-    private Item $item;
+    private OrderItem $orderItem;
 
-    public function __construct(Item $item) {
+    public function __construct(OrderItem $orderItem) {
 
-        $this->item = $item;
+        $this->orderItem = $orderItem;
     }
 
     public function create($request) {
 
-        $name = $request['name'] ?? null;
-        $brand = $request['brand'] ?? null;
-        $price = $request['price'] ?? null;
-        $category_id = $request['category_id'] ?? null;
-        $description = $request['description'] ?? null;
+        $quantity = $request['quantity'] ?? null;
 
-        // валидация данных запроса
+        // валидация данных
 
-        if (is_string($name) && is_string($brand) &&
-            is_float($price) && is_numeric($category_id) &&
-            is_string($description)) {
+        if (is_int($quantity) && $quantity > 0) {
 
             try {
 
-                // формирование ответа при успешном создании
+                // формирование ответа при успешном добавлении
 
-                $response = $this->item->createItem($name, $brand, $price, $category_id, $description);
+                $response = $this->orderItem->createOrderItem($quantity);
                 http_response_code(201);
 
                 return json_encode([
                     'data' => [
-                        'type' => 'item',
-                        'id' => $this->item->getId(),
+                        'type' => 'order_item',
+                        'id' => $this->orderItem->getId(),
                         'attributes' => [
                             'message' => $response
                         ]
@@ -57,11 +51,13 @@ class ItemController {
         }
         else {
 
+            // формирование ошибки в случае некорректного запроса
+
             http_response_code(400);
 
             return json_encode([
                'status' => 'error',
-               'message' => 'Некорректные данные.'
+               'message' => 'Некорректное количество товаров.'
             ]);
         }
     }
@@ -72,19 +68,24 @@ class ItemController {
 
             // формирование успешного ответа
 
-            $response = $this->item->readItem();
+            $response = $this->orderItem->readOrderItem();
             http_response_code(200);
 
             return json_encode([
                 'data' => [
-                    'type' => 'item',
-                    'id' => $this->item->getId(),
+                    'type' => 'order_item',
+                    'id' => $this->orderItem->getId(),
                     'attributes' => [
-                        'name' => $response['name'],
-                        'brand' => $response['brand'],
                         'price' => $response['price'],
-                        'category_name' => $response['category'],
-                        'description' => $response['description']
+                        'quantity' => $response['quantity'],
+                        'item' => [
+                            'type' => 'item',
+                            'id' => $response['id'],
+                            'attributes' => [
+                                'name' => $response['name'],
+                                'brand' => $response['brand']
+                            ]
+                        ]
                     ]
                 ]
             ]);
@@ -107,32 +108,21 @@ class ItemController {
 
     public function update($request) {
 
-        $data = $request['data'] ?? null;
+        $quantity = $request['quantity'] ?? null;
 
-        if (empty($data)) {
-
-            // формирование ошибки в случае отсутствия данных
-
-            http_response_code(400);
-
-            return json_encode([
-               'status' => 'error',
-               'message' => 'Нет данных для добавления.'
-            ]);
-        }
-        else {
+        if (is_int($quantity) && $quantity > 0) {
 
             try {
 
-                // формирование ответа при успешном обновлении данных
+                // формирование ответа при успешном обновлении
 
-                $response = $this->item->updateItem($data);
+                $response = $this->orderItem->updateOrderItem($quantity);
                 http_response_code(204);
 
                 return json_encode([
                     'data' => [
-                        'type' => 'item',
-                        'id' => $this->item->getId(),
+                        'type' => 'order_item',
+                        'id' => $this->orderItem->getId(),
                         'attributes' => [
                             'message' => $response
                         ]
@@ -154,6 +144,17 @@ class ItemController {
                 ]);
             }
         }
+        else {
+
+            // формирование ошибки в случае некорректного запроса
+
+            http_response_code(400);
+
+            return json_encode([
+                'status' => 'error',
+                'message' => 'Некорректное количество товаров.'
+            ]);
+        }
     }
 
     public function delete() {
@@ -162,15 +163,14 @@ class ItemController {
 
             // формирование ответа при успешном удалении
 
-            $response = $this->item->deleteItem();
-
+            $response = $this->orderItem->deleteOrderItem();
             http_response_code(204);
 
             return json_encode([
                 'data' => [
-                    'type' => 'item',
-                    'id' => $this->item->getId(),
-                    'attribute' => [
+                    'type' => 'order_item',
+                    'id' => $this->orderItem->getId(),
+                    'attributes' => [
                         'message' => $response
                     ]
                 ]

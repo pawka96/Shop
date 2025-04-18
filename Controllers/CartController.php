@@ -37,6 +37,7 @@ class CartController {
                 return json_encode([
                     'data' => [
                         'type' => 'cart',
+                        'id' => $this->cart->getId(),
                         'attributes' => [
                             'message' => $response
                         ]
@@ -88,6 +89,7 @@ class CartController {
                 return json_encode([
                     'data' => [
                         'type' => 'cart',
+                        'id' => $this->cart->getId(),
                         'attributes' => [
                             'message' => $response
                         ]
@@ -120,11 +122,12 @@ class CartController {
 
             // в случае успешной очистки корзины
 
-            http_response_code(200);
+            http_response_code(204);
 
             return json_encode([
                 'data' => [
                     'type' => 'cart',
+                    'id' => $this->cart->getId(),
                     'attributes' => [
                         'message' => $response
                     ]
@@ -155,6 +158,24 @@ class CartController {
 
             $response = $this->cart->showItems();
 
+            // получение массива товаров
+
+            $items = [];
+
+            foreach ($response as $item) {
+
+                $items[] = [
+                    'type' => 'item',
+                    'id' => $item['id'],
+                    'attributes' => [
+                        'name' => $item['name'],
+                        'brand' => $item['brand'],
+                        'price' => $item['price'],
+                        'quantity' => $item['quantity']
+                    ]
+                ];
+            }
+
             http_response_code(200);
 
             return json_encode([
@@ -162,10 +183,7 @@ class CartController {
                     'type' => 'cart',
                     'id' => $this->cart->getId(),
                     'attributes' => [
-                        'item_name' => $response['name'],
-                        'item_brand' => $response['brand'],
-                        'item_quantity' => $response['quantity'],
-                        'item_price' => $response['price'],
+                        'items' => $items
                     ]
                 ]
             ]);
@@ -193,7 +211,6 @@ class CartController {
             // формирование успешного ответа
 
             $response = $this->cart->getTotalSum();
-
             http_response_code(200);
 
             return json_encode([

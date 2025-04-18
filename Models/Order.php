@@ -8,12 +8,9 @@ class Order {
 
     private Cart $cart;
 
-    private User $user;
-
     public function __construct(Cart $cart) {
 
         $this->cart = $cart;
-        $this->user = $cart->getUser();
 
         try {
             $this->pdo = new PDO('psql:host=localhost;dbname=shop', 'postgres', 'Hjccbzlkzheccrb[');
@@ -21,7 +18,6 @@ class Order {
         }
         catch (PDOException $exception) {
 
-            error_log($exception->getMessage());
             throw new ServerException("Ошибка при подключении к БД: " . $exception->getMessage());;
         }
     }
@@ -44,28 +40,27 @@ class Order {
 
             $stmt = $this->pdo->prepare('SELECT cart.total_sum FROM cart
                                                 JOIN "user" ON "user".id = cart.user_id
-                                                WHERE "user".id = ? AND cart.id = ?'); // возможно стоит cart.id убрать
+                                                WHERE cart.id = ?');
 
-            $stmt->execute([$this->user->getId(), $this->cart->getId()]);
+            $stmt->execute([$this->cart->getId()]);
 
             if ($total_sum = $stmt->fetchColumn()) {
 
                 $stmt = $this->pdo->prepare('INSERT INTO "order" (user_id, date, total_sum, status)
                                                     VALUES (?, NOW(), ?, создан) RETURNING id');
 
-                $stmt->execute([$this->user->getId(),$total_sum]);
+                $stmt->execute([$this->cart->getUser()->getId(),$total_sum]);
                 $this->id = $stmt->fetchColumn();
 
                 return "Заказ успешно создан";
             }
             else {
 
-                return "Товары в корзину не добавлены.";
+                throw new ServerException("Ошибка при работе с БД: товары в корзину не добавлены.");
             }
         }
         catch (PDOException $exception) {
 
-            error_log($exception->getMessage());
             throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
@@ -79,25 +74,19 @@ class Order {
 
             if ($this->id) {
 
-                $stmt = $this->pdo->prepare('SELECT "user".name, "user".email, "user".phone_num,
+                $stmt = $this->pdo->prepare('SELECT "user".id, "user".name, "user".email, "user".phone_num,
                                                     "order".date, "order".total_sum, "order".status FROM "order"
                                                     JOIN "user" ON "user".id = "order".user_id
-                                                    WHERE "order".id = ? AND "user".id = ?');
+                                                    WHERE "order".id = ?');
 
-                $stmt->execute([$this->id, $this->user->getId()]);
+                $stmt->execute([$this->id]);
+                $order = $stmt->fetch(PDO::FETCH_ASSOC);
 
-                if ($order = $stmt->fetch(PDO::FETCH_ASSOC)) {
-
-                    return $order;
-                }
-                else {
-
-                    return "С таким заказом пользователь не найден.";
-                }
+                return $order;
             }
             else {
 
-                return "Такого заказа нет.";
+                throw new ServerException("Ошибка при работе с БД: такой заказ не найден.");
             }
         }
         catch (PDOException $exception) {
@@ -109,29 +98,23 @@ class Order {
 
     public function updateOrder($status) {
 
-        if ($status == 'оплачен' || $status === "выполнен") {
+        if ($this->id) {
 
-            if ($this->id) {
+            try {
 
-                try {
+                $stmt = $this->pdo->prepare('UPDATE "order" SET "status" = ? WHERE id = ?');
+                $stmt->execute([$status, $this->id]);
 
-                    $stmt = $this->pdo->prepare('UPDATE "order" SET "status" = ? WHERE id = ?');
-                    $stmt->execute([$status, $this->id]);
+                return "Новый статус заказа: " . $status;
+            }
+            catch (PDOException $exception) {
 
-                    return "Новый статус заказа: " . $status;
-                }
-                catch (PDOException $exception) {
-
-                    throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
-                }
-            } else {
-
-                return "Такого заказа нет.";
+                throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
             }
         }
         else {
 
-            return "Неверный формат статуса.";
+            throw new ServerException("Ошибка при работе с БД: такой заказ не найден.");
         }
     }
 
@@ -148,12 +131,11 @@ class Order {
             }
             else {
 
-                return "Такого заказа нет.";
+                throw new ServerException("Ошибка при работе с БД: такой заказ не найден.");
             }
         }
         catch (PDOException $exception) {
 
-            error_log($exception->getMessage());
             throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }

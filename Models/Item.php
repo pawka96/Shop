@@ -13,7 +13,6 @@ class Item {
         }
         catch (PDOException $exception) {
 
-            error_log($exception->getMessage());
             throw new ServerException("Ошибка при подключении к БД: " . $exception->getMessage());
         }
     }
@@ -63,6 +62,7 @@ class Item {
                                                     "item".description, category.name as category FROM "item"
                                                     JOIN category ON category.id = "item".category_id
                                                     WHERE item.id = ?');
+
                 $stmt->execute([$this->id]);
                 $item = $stmt->fetch(PDO::FETCH_ASSOC);
 

@@ -14,7 +14,6 @@ class User {
         }
         catch (PDOException $exception) {
 
-            error_log($exception->getMessage());
             throw new ServerException("Ошибка при подключении к БД: " . $exception->getMessage());
         }
     }
@@ -51,6 +50,7 @@ class User {
                 $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
                 $stmt = $this->pdo->prepare('INSERT INTO "user" (email, password, name, phone_num)
                                                     VALUES (?, ?, ?, ?) RETURNING id');
+
                 $stmt->execute([$email, $hashedPassword, $name, $phone_num]);
                 $this->id = $stmt->fetchColumn();
 

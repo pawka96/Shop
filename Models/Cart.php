@@ -19,7 +19,6 @@ class Cart {
         }
         catch (PDOException $exception) {
 
-            error_log($exception->getMessage());
             throw new ServerException("Ошибка при подключении к БД: " . $exception->getMessage());;
         }
     }
@@ -149,7 +148,7 @@ class Cart {
 
         try {
 
-            $stmt = $this->pdo->prepare('SELECT "item".name, "item".brand, cart.quantity, "item".price FROM cart
+            $stmt = $this->pdo->prepare('SELECT "item".id, "item".name, "item".brand, "item".price, cart.quantity FROM cart
                                                 JOIN "item" ON "item".id = cart.item_id WHERE cart.user_id = ?');
 
             $stmt->execute([$this->user->getId()]);

@@ -35,11 +35,12 @@ class UserController {
                 // формирование ответа при успешной регистрации
 
                 $response = $this->user->registerUser($email, $password, $name, $phone_num);
-                http_response_code(200);
+                http_response_code(204);
 
                 return json_encode([
                     'data' => [
                         'type' => 'user',
+                        'id' => $this->user->getId(),
                         'attributes' => [
                             'message' => $response
                         ]
@@ -86,11 +87,12 @@ class UserController {
                 // формирование ответа при успешной аутентификации
 
                 $response = $this->user->authUser($email, $password);
-                http_response_code(200);
+                http_response_code(204);
 
                 return json_encode([
                     'data' => [
                         'type' => 'user',
+                        'id' => $this->user->getId(),
                         'attributes' => [
                             'message' => $response
                         ]
