@@ -1,5 +1,8 @@
 <?php
 
+require "isExist.php";
+require "getPrice.php";
+
 class OrderItem {
 
     private int $id;
@@ -67,9 +70,9 @@ class OrderItem {
 
             // проверка наличия товара в БД
 
-            if ($this->isExistItem()) {
+            if (isExist($this->pdo, $this->item->getId())) {
 
-                $itemPrice = $this->getItemPrice();     // получение цены товара
+                $itemPrice = getPrice($this->pdo, $this->item->getId());     // получение цены товара
 
                 // проверка наличия товара в корзине
 

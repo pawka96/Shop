@@ -19,7 +19,7 @@ class Cart {
         }
         catch (PDOException $exception) {
 
-            throw new ServerException("Ошибка при подключении к БД: " . $exception->getMessage());;
+            throw new ServerException("Ошибка при подключении к БД: " . $exception->getMessage());
         }
     }
 
@@ -33,7 +33,17 @@ class Cart {
         return $this->id;
     }
 
-    public function addItem($item_id, $quantity) {
+    public function isExistItem($item_id): bool {
+
+        // проверка наличия товара, и получение его стоимости в случае успешного нахождения
+
+        $stmt = $this->pdo->prepare('SELECT price FROM "item" WHERE id = ?');
+        $stmt->execute([$item_id]);
+
+        return $stmt->fetchColumn(PDO::FETCH_ASSOC) !== false;
+    }
+
+    public function createCart($item_id, $quantity) {
 
         try {
 
@@ -87,6 +97,40 @@ class Cart {
         }
     }
 
+    public function updateCart(callable $action, $quantity) {
+
+
+    }
+
+    public function addItem($item_id, $quantity) {
+
+        try {
+
+            // проверка наличия товара в БД
+
+            $stmt = $this->pdo->prepare('SELECT * FROM item WHERE id = ?');
+            $stmt->execute([$item_id]);
+            $item = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($item) {
+
+                $stmt = $this->pdo->prepare('UPDATE cart SET quantity = ?, total_sum = ? WHERE cart_id = ?');
+                $stmt->execute([$quantity, $this->id]);
+
+                return "Товар удален из корзины.";
+            }
+            else {
+
+                throw new ServerException("Ошибка при работе с БД: товар не найден.");
+            }
+        }
+        catch (PDOException $exception) {
+
+            throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
+        }
+
+    }
+
     public function removeItem($item_id) {
 
         try {
@@ -115,7 +159,7 @@ class Cart {
         }
     }
 
-    public function clearCart() {
+    public function deleteCart() {
 
         try {
 
@@ -144,7 +188,7 @@ class Cart {
         }
     }
 
-    public function showItems() {
+    public function readCart() {
 
         try {
 

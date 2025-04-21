@@ -113,8 +113,7 @@ class CartController {
         }
     }
 
-    public function clear()
-    {
+    public function clear() {
 
         try {
 
@@ -150,13 +149,13 @@ class CartController {
         }
     }
 
-    public function show() {
+    public function read() {
 
         try {
 
             // формирование успешного ответа
 
-            $response = $this->cart->showItems();
+            $response = $this->cart->readCart();
 
             // получение массива товаров
 
@@ -176,6 +175,8 @@ class CartController {
                 ];
             }
 
+            $total_sum = $this->cart->getTotalSum();
+
             http_response_code(200);
 
             return json_encode([
@@ -183,7 +184,8 @@ class CartController {
                     'type' => 'cart',
                     'id' => $this->cart->getId(),
                     'attributes' => [
-                        'items' => $items
+                        'items' => $items,
+                        'total_sum' => $total_sum
                     ]
                 ]
             ]);
