@@ -1,9 +1,8 @@
 <?php
 
-require "isExist.php";
-require "getPrice.php";
-
 class OrderItem {
+
+    use ItemOperations;
 
     private int $id;
 
@@ -11,12 +10,9 @@ class OrderItem {
 
     private Order $order;
 
-    private Item $item;
-
     public function __construct(Order $order, Item $item) {
 
         $this->order = $order;
-        $this->item = $item;
 
         try {
 
@@ -34,49 +30,20 @@ class OrderItem {
         return $this->id;
     }
 
-    public function isExistItem(): bool {
 
-        // проверка наличия товара
-
-        $stmt = $this->pdo->prepare('SELECT * FROM "item" WHERE id = ?');
-        $stmt->execute([$this->item->getId()]);
-
-        return $stmt->fetch(PDO::FETCH_ASSOC) !== false;
-    }
-
-    public function checkCart(): ?array {
-
-        // проверка наличия определенного товара в корзине (получение его цены и количества)
-
-        $stmt = $this->pdo->prepare('SELECT quantity, price FROM "cart" WHERE id = ? AND item_id = ?');
-        $stmt->execute([$this->order->getCart()->getId(), $this->item->getId()]);
-
-        return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
-    }
-
-    public function getItemPrice(): float {
-
-        // получение цены товара
-
-        $stmt = $this->pdo->prepare('SELECT price FROM "item" WHERE id = ?');
-        $stmt->execute([$this->item->getId()]);
-
-        return $stmt->fetchColumn();
-    }
-
-    public function createOrderItem($quantity) {
+    public function createOrderItem($item_id, $quantity) {
 
         try {
 
             // проверка наличия товара в БД
 
-            if (isExist($this->pdo, $this->item->getId())) {
+            if ($this->isExist($this->pdo, $item_id)) {
 
-                $itemPrice = getPrice($this->pdo, $this->item->getId());     // получение цены товара
+                $itemPrice = $this->getPrice($this->pdo, $item_id());     // получение цены товара
 
                 // проверка наличия товара в корзине
 
-                if ($this->checkCart()) {
+                if ($this->checkCart($this->pdo, $this->order->getCart()->getId(), $item_id)) {
 
                     throw new ServerException("Ошибка при работе с БД: такой товар уже есть в чеке.");
                 }
@@ -87,7 +54,7 @@ class OrderItem {
                     $stmt = $this->pdo->prepare('INSERT INTO order_item (item_id, order_id, quantity, total_sum)
                                                         VALUES (?, ?, ?, ?) RETURNING id');
 
-                    $stmt->execute([$this->item->getId(), $this->order->getId(), $quantity, $itemPrice]);
+                    $stmt->execute([$item_id, $this->order->getId(), $quantity, $itemPrice]);
                     $this->id = $stmt->fetchColumn();
 
                     return "Новая позиция в чек добавлена.";
@@ -104,21 +71,20 @@ class OrderItem {
         }
     }
 
-
     public function readOrderItem() {
 
         try {
 
             if ($this->id) {
 
-                $stmt = $this->pdo->prepare('SELECT "item".id, "item".name, "item".brand, order_item.price, order_item.quantity FROM order_item
+                $stmt = $this->pdo->prepare('SELECT "item".id, "item".name, "item".brand, order_item.price, order_item.quantity
+                                                    FROM order_item
                                                     JOIN "item" ON "item".id = order_item.item_id 
                                                     WHERE order_item.id = ?');
 
                 $stmt->execute([$this->id]);
-                $orderItem = $stmt->fetch(PDO::FETCH_ASSOC);
 
-                return $orderItem;
+                return $stmt->fetch(PDO::FETCH_ASSOC);
             }
             else {
 
@@ -131,19 +97,19 @@ class OrderItem {
         }
     }
 
-    public function updateOrderItem($quantity) {
+    public function updateOrderItem($item_id, $quantity) {
 
         try {
 
             // проверка наличия товара в БД
 
-            if ($this->isExistItem()) {
+            if ($this->isExist($this->pdo, $item_id)) {
 
-                $itemPrice = $this->getItemPrice();     // получение цены товара из БД
+                $itemPrice = $this->getPrice($this->pdo, $item_id);     // получение цены товара из БД
 
                 // проверка наличия товара в корзине
 
-                if ($itemInCart = $this->checkCart()) {
+                if ($itemInCart = $this->checkCart($this->pdo, $this->order->getCart()->getId(), $item_id)) {
 
                     $stmt = $this->pdo->prepare('UPDATE order_item SET quantity = ?, price = ? WHERE id = ?');
                     $stmt->execute([$quantity + $itemInCart['quantity'], $itemPrice * $quantity + $itemInCart['total_sum'], $this->id]);
@@ -159,7 +125,8 @@ class OrderItem {
 
                 throw new ServerException("Ошибка при работе с БД: такой товар не найден.");
             }
-        } catch (PDOException $exception) {
+        }
+        catch (PDOException $exception) {
 
             throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }

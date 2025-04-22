@@ -41,3 +41,17 @@ $routes = [
         'DELETE' => 'CartController@clear'
     ]
 ];
+
+/*$routes = [
+    'cart' => [
+        'POST' => 'CartController@add', // Добавить товар в корзину
+        'GET' => [
+            'show' => 'CartController@show', // Показать содержимое корзины
+            'sum' => 'CartController@getSum', // Получить сумму товаров
+        ],
+        'DELETE' => [
+            '{item_id}' => 'CartController@remove', // Удалить конкретный товар из корзины
+            'clear' => 'CartController@clear' // Очистить всю корзину
+        ]
+    ],
+];*/

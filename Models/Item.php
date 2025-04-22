@@ -16,12 +16,6 @@ class Item {
             throw new ServerException("Ошибка при подключении к БД: " . $exception->getMessage());
         }
     }
-
-    public function getId(): int {
-
-        return $this->id;
-    }
-
     public function createItem($name, $brand, $price, $category_id, $description) {
 
         try {
