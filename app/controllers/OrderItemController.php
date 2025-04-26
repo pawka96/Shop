@@ -4,12 +4,14 @@ class OrderItemController {
 
     private OrderItem $orderItem;
 
-    public function __construct(OrderItem $orderItem) {
+    public function __construct(OrderItem $orderItem)
+    {
 
         $this->orderItem = $orderItem;
     }
 
-    public function create($request) {
+    public function create($request)
+    {
 
         $quantity = $request['quantity'] ?? null;
 
@@ -33,12 +35,10 @@ class OrderItemController {
                         ]
                     ]
                 ]);
-            }
-            catch (ServerException $exception) {
+            } catch (ServerException $exception) {
 
                 return $exception->handle();
-            }
-            catch (Exception $exception) {
+            } catch (Exception $exception) {
 
                 error_log($exception->getMessage());
                 http_response_code(500);
@@ -48,21 +48,21 @@ class OrderItemController {
                     'message' => $exception->getMessage()
                 ]);
             }
-        }
-        else {
+        } else {
 
             // формирование ошибки в случае некорректного запроса
 
             http_response_code(400);
 
             return json_encode([
-               'status' => 'error',
-               'message' => 'Некорректное количество товаров.'
+                'status' => 'error',
+                'message' => 'Некорректное количество товаров.'
             ]);
         }
     }
 
-    public function read() {
+    public function read()
+    {
 
         try {
 
@@ -89,12 +89,10 @@ class OrderItemController {
                     ]
                 ]
             ]);
-        }
-        catch (ServerException $exception) {
+        } catch (ServerException $exception) {
 
             return $exception->handle();
-        }
-        catch (Exception $exception) {
+        } catch (Exception $exception) {
 
             error_log($exception->getMessage());
             http_response_code(500);
@@ -106,7 +104,8 @@ class OrderItemController {
         }
     }
 
-    public function update($request) {
+    public function update($request)
+    {
 
         $quantity = $request['quantity'] ?? null;
 
@@ -128,12 +127,10 @@ class OrderItemController {
                         ]
                     ]
                 ]);
-            }
-            catch (ServerException $exception) {
+            } catch (ServerException $exception) {
 
                 return $exception->handle();
-            }
-            catch (Exception $exception) {
+            } catch (Exception $exception) {
 
                 error_log($exception->getMessage());
                 http_response_code(500);
@@ -143,8 +140,7 @@ class OrderItemController {
                     'message' => $exception->getMessage()
                 ]);
             }
-        }
-        else {
+        } else {
 
             // формирование ошибки в случае некорректного запроса
 
@@ -157,7 +153,8 @@ class OrderItemController {
         }
     }
 
-    public function delete() {
+    public function delete()
+    {
 
         try {
 
@@ -175,12 +172,10 @@ class OrderItemController {
                     ]
                 ]
             ]);
-        }
-        catch (ServerException $exception) {
+        } catch (ServerException $exception) {
 
             return $exception->handle();
-        }
-        catch (Exception $exception) {
+        } catch (Exception $exception) {
 
             error_log($exception->getMessage());
             http_response_code(500);

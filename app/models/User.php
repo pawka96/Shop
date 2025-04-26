@@ -23,6 +23,20 @@ class User {
         return $this->id;
     }
 
+    public function getAllUsers(): ?array {
+
+        try {
+
+            $stmt = $this->pdo->query('SELECT id, name, email, phone_num, status password FROM "user"');
+
+            return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: null;
+        }
+        catch (PDOException $exception) {
+
+            throw new ServerException("Ошибка при подключении к БД: " . $exception->getMessage());
+        }
+    }
+
     public function registerUser($email, $password, $name, $phone_num) {
 
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -62,8 +76,7 @@ class User {
             throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
-
-    public function authUser($email, $password) {
+    public function authenticateUser($email, $password) {
 
         try {
 
@@ -74,13 +87,11 @@ class User {
             if ($user && password_verify($password, $user['password'])) {
 
                 return "Вход выполнен успешно.";
-            }
-            else {
+            } else {
 
                 throw new ServerException("Ошибка при аутентификации: введены неверные данные.");
             }
-        }
-        catch (PDOException $exception) {
+        } catch (PDOException $exception) {
 
             throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }

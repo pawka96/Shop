@@ -21,3 +21,8 @@ if ($requestMethod === 'POST' && $requestUri === '/register') {
 }*/
 
 
+require_once '../app/routes.php'; // Подключаем файл маршрутов
+
+// Инициализация приложения
+$requestUri = $_SERVER['REQUEST_URI'];
+handleRequest($requestUri); // Функция для обработки запроса

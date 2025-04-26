@@ -33,12 +33,12 @@ $routes = [
         'DELETE' => 'OrderItemController@delete'
     ],
     'cart' => [
-        'POST' => 'CartController@add',
-        'GET' => ['show' => 'CartController@show',
-            'sum' => 'CartController@getSum',
-        ],
-        'PUT' => 'CartController@remove',
-        'DELETE' => 'CartController@clear'
+        'POST /cart' => 'CartController@create',
+        'GET /cart/{id}' => 'CartController@show',
+        'PUT /cart/{id}/item/{item_id}' => 'CartController@update',
+        'DELETE' => ['/cart/{id}' => 'CartController@delete',
+                        '/cart/{id}/item/{item_id}' => 'CartController@remove',
+        ]
     ]
 ];
 
@@ -55,3 +55,20 @@ $routes = [
         ]
     ],
 ];*/
+
+function handleRequest($uri) {
+    switch ($uri) {
+        case '/products':
+            require_once 'controllers/ProductController.php';
+            $controller = new ProductController();
+            $controller->index();
+            break;
+        case '/products/create':
+            // Код для обработки создания продукта
+            break;
+        // Другие маршруты...
+        default:
+            // Обработка 404
+            break;
+    }
+}

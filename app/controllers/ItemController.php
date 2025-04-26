@@ -4,12 +4,14 @@ class ItemController {
 
     private Item $item;
 
-    public function __construct(Item $item) {
+    public function __construct(Item $item)
+    {
 
         $this->item = $item;
     }
 
-    public function create($request) {
+    public function create($request)
+    {
 
         $name = $request['name'] ?? null;
         $brand = $request['brand'] ?? null;
@@ -39,12 +41,10 @@ class ItemController {
                         ]
                     ]
                 ]);
-            }
-            catch (ServerException $exception) {
+            } catch (ServerException $exception) {
 
                 return $exception->handle();
-            }
-            catch (Exception $exception) {
+            } catch (Exception $exception) {
 
                 error_log($exception->getMessage());
                 http_response_code(500);
@@ -54,19 +54,19 @@ class ItemController {
                     'message' => $exception->getMessage()
                 ]);
             }
-        }
-        else {
+        } else {
 
             http_response_code(400);
 
             return json_encode([
-               'status' => 'error',
-               'message' => 'Некорректные данные.'
+                'status' => 'error',
+                'message' => 'Некорректные данные.'
             ]);
         }
     }
 
-    public function read() {
+    public function read()
+    {
 
         try {
 
@@ -88,12 +88,10 @@ class ItemController {
                     ]
                 ]
             ]);
-        }
-        catch (ServerException $exception) {
+        } catch (ServerException $exception) {
 
             return $exception->handle();
-        }
-        catch (Exception $exception) {
+        } catch (Exception $exception) {
 
             error_log($exception->getMessage());
             http_response_code(500);
@@ -105,7 +103,8 @@ class ItemController {
         }
     }
 
-    public function update($request) {
+    public function update($request)
+    {
 
         $data = $request['data'] ?? null;
 
@@ -116,11 +115,10 @@ class ItemController {
             http_response_code(400);
 
             return json_encode([
-               'status' => 'error',
-               'message' => 'Нет данных для добавления.'
+                'status' => 'error',
+                'message' => 'Нет данных для добавления.'
             ]);
-        }
-        else {
+        } else {
 
             try {
 
@@ -138,12 +136,10 @@ class ItemController {
                         ]
                     ]
                 ]);
-            }
-            catch (ServerException $exception) {
+            } catch (ServerException $exception) {
 
                 return $exception->handle();
-            }
-            catch (Exception $exception) {
+            } catch (Exception $exception) {
 
                 error_log($exception->getMessage());
                 http_response_code(500);
@@ -156,14 +152,14 @@ class ItemController {
         }
     }
 
-    public function delete() {
+    public function delete()
+    {
 
         try {
 
             // формирование ответа при успешном удалении
 
             $response = $this->item->deleteItem();
-
             http_response_code(204);
 
             return json_encode([
@@ -175,12 +171,10 @@ class ItemController {
                     ]
                 ]
             ]);
-        }
-        catch (ServerException $exception) {
+        } catch (ServerException $exception) {
 
             return $exception->handle();
-        }
-        catch (Exception $exception) {
+        } catch (Exception $exception) {
 
             error_log($exception->getMessage());
             http_response_code(500);

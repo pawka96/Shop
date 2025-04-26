@@ -6,24 +6,26 @@ class Category {
 
     private PDO $pdo;
 
-    public function __construct() {
+    public function __construct()
+    {
 
         try {
             $this->pdo = new PDO('psql:host=localhost;dbname=shop', 'postgres', 'Hjccbzlkzheccrb[');
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        }
-        catch (PDOException $exception) {
+        } catch (PDOException $exception) {
 
             throw new ServerException("Ошибка при подключении к БД: " . $exception->getMessage());
         }
     }
 
-    public function getId(): int {
+    public function getId(): int
+    {
 
         return $this->id;
     }
 
-    public function createCategory($name, $description) {
+    public function createCategory($name, $description)
+    {
 
         // проверка на дубли в БД
 
@@ -35,8 +37,7 @@ class Category {
             if ($stmt->fetchColumn() > 0) {
 
                 throw new ServerException("Ошибка при подключении к БД: такая категория уже существует.");
-            }
-            else {
+            } else {
 
                 $stmt = $this->pdo->prepare('INSERT INTO category (name, description) VALUES (?, ?) RETURNING id');
                 $stmt->execute([$name, $description]);
@@ -44,14 +45,14 @@ class Category {
 
                 return "Новая категория успешно создана.";
             }
-        }
-        catch (PDOException $exception) {
+        } catch (PDOException $exception) {
 
             throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
 
-    public function readCategory() {
+    public function readCategory()
+    {
 
         // проверка на наличие категории в БД
 
@@ -64,22 +65,20 @@ class Category {
                                                     JOIN "item" ON "item".category_id = category.id
                                                     WHERE category.id = ?');
                 $stmt->execute([$this->id]);
-                $category = $stmt->fetchALL(PDO::FETCH_ASSOC);
 
-                return $category;
-            }
-            else {
+                return $stmt->fetchALL(PDO::FETCH_ASSOC);
+            } else {
 
                 throw new ServerException("Ошибка при работе с БД: такой категории нет.");
             }
-        }
-        catch (PDOException $exception) {
+        } catch (PDOException $exception) {
 
             throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
 
-    public function updateCategory(...$data) {
+    public function updateCategory(...$data)
+    {
 
         // проверка на наличие категории в БД
 
@@ -103,19 +102,18 @@ class Category {
                 $stmt->execute([...$values, $this->id]);
 
                 return "Данные категории успешно обновлены.";
-            }
-            else {
+            } else {
 
                 throw new ServerException("Ошибка при работе с БД: такой категории нет.");
             }
-        }
-        catch (PDOException $exception) {
+        } catch (PDOException $exception) {
 
-            return  "Ошибка при работе с БД: " . $exception->getMessage();
+            return "Ошибка при работе с БД: " . $exception->getMessage();
         }
     }
 
-    public function deleteCategory() {
+    public function deleteCategory()
+    {
 
         // проверка на наличие категории в БД
 
@@ -123,17 +121,15 @@ class Category {
 
             if ($this->id) {
 
-               $stmt = $this->pdo->prepare('DELETE FROM category WHERE id = ?');
-               $stmt->execute([$this->id]);
+                $stmt = $this->pdo->prepare('DELETE FROM category WHERE id = ?');
+                $stmt->execute([$this->id]);
 
-               return "Категория успешно удалена.";
-            }
-            else {
+                return "Категория успешно удалена.";
+            } else {
 
                 throw new ServerException("Ошибка при работе с БД: такой категории нет.");
             }
-        }
-        catch (PDOException $exception) {
+        } catch (PDOException $exception) {
 
             throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }

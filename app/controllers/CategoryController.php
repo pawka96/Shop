@@ -4,12 +4,14 @@ class CategoryController {
 
     private Category $category;
 
-    public function __construct(Category $category) {
+    public function __construct(Category $category)
+    {
 
         $this->category = $category;
     }
 
-    public function create($request) {
+    public function create($request)
+    {
 
         $name = $request['name'] ?? null;
         $description = $request['description'] ?? null;
@@ -24,8 +26,7 @@ class CategoryController {
                 'status' => 'error',
                 'message' => 'Данные для создания отсутствуют.'
             ]);
-        }
-        else {
+        } else {
 
             try {
 
@@ -42,12 +43,10 @@ class CategoryController {
                         ]
                     ]
                 ]);
-            }
-            catch (ServerException $exception) {
+            } catch (ServerException $exception) {
 
                 $exception->handle();
-            }
-            catch (Exception $exception) {
+            } catch (Exception $exception) {
 
                 error_log($exception->getMessage());
                 http_response_code(500);
@@ -60,7 +59,8 @@ class CategoryController {
         }
     }
 
-    public function read() {
+    public function read()
+    {
 
         try {
 
@@ -95,12 +95,10 @@ class CategoryController {
                     ]
                 ]
             ]);
-        }
-        catch (ServerException $exception) {
+        } catch (ServerException $exception) {
 
             $exception->handle();
-        }
-        catch (Exception $exception) {
+        } catch (Exception $exception) {
 
             error_log($exception->getMessage());
             http_response_code(500);
@@ -112,7 +110,8 @@ class CategoryController {
         }
     }
 
-    public function update($request) {
+    public function update($request)
+    {
 
         $data = $request['data'] ?? null;
 
@@ -124,8 +123,7 @@ class CategoryController {
                 'status' => 'error',
                 'message' => 'Нет данных для добавления.'
             ]);
-        }
-        else {
+        } else {
 
             try {
 
@@ -144,12 +142,10 @@ class CategoryController {
                         ]
                     ]
                 ]);
-            }
-            catch (ServerException $exception) {
+            } catch (ServerException $exception) {
 
                 $exception->handle();
-            }
-            catch (Exception $exception) {
+            } catch (Exception $exception) {
 
                 error_log($exception->getMessage());
                 http_response_code(500);
@@ -162,7 +158,8 @@ class CategoryController {
         }
     }
 
-    public function delete() {
+    public function delete()
+    {
 
         try {
 
@@ -181,12 +178,10 @@ class CategoryController {
                     ]
                 ]
             ]);
-        }
-        catch (ServerException $exception) {
+        } catch (ServerException $exception) {
 
             return $exception->handle();
-        }
-        catch (Exception $exception) {
+        } catch (Exception $exception) {
 
             error_log($exception->getMessage());
             http_response_code(500);

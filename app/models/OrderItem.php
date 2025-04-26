@@ -10,7 +10,8 @@ class OrderItem {
 
     private Order $order;
 
-    public function __construct(Order $order, Item $item) {
+    public function __construct(Order $order, Item $item)
+    {
 
         $this->order = $order;
 
@@ -18,20 +19,21 @@ class OrderItem {
 
             $this->pdo = new PDO('psql:host=localhost;dbname=shop', 'postgres', 'Hjccbzlkzheccrb[');
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        }
-        catch (PDOException $exception) {
+        } catch (PDOException $exception) {
 
             throw new ServerException("Ошибка при подключении к БД: " . $exception->getMessage());
         }
     }
 
-    public function getId(): int {
+    public function getId(): int
+    {
 
         return $this->id;
     }
 
 
-    public function createOrderItem($item_id, $quantity) {
+    public function createOrderItem($item_id, $quantity)
+    {
 
         try {
 
@@ -46,8 +48,7 @@ class OrderItem {
                 if ($this->checkCart($this->pdo, $this->order->getCart()->getId(), $item_id)) {
 
                     throw new ServerException("Ошибка при работе с БД: такой товар уже есть в чеке.");
-                }
-                else {
+                } else {
 
                     // в случае отсутствия - добавление новой позиции в чек
 
@@ -59,19 +60,18 @@ class OrderItem {
 
                     return "Новая позиция в чек добавлена.";
                 }
-            }
-            else {
+            } else {
 
                 throw new ServerException("Ошибка при работе с БД: такой товар не найден.");
             }
-        }
-        catch (PDOException $exception) {
+        } catch (PDOException $exception) {
 
             throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
 
-    public function readOrderItem() {
+    public function readOrderItem()
+    {
 
         try {
 
@@ -85,19 +85,18 @@ class OrderItem {
                 $stmt->execute([$this->id]);
 
                 return $stmt->fetch(PDO::FETCH_ASSOC);
-            }
-            else {
+            } else {
 
                 throw new ServerException("Ошибка при работе с БД: такого товара нет в чеке.");
             }
-        }
-        catch (PDOException $exception) {
+        } catch (PDOException $exception) {
 
             throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
 
-    public function updateOrderItem($item_id, $quantity) {
+    public function updateOrderItem($item_id, $quantity)
+    {
 
         try {
 
@@ -115,24 +114,22 @@ class OrderItem {
                     $stmt->execute([$quantity + $itemInCart['quantity'], $itemPrice * $quantity + $itemInCart['total_sum'], $this->id]);
 
                     return "Данные о позиции в чеке изменены.";
-                }
-                else {
+                } else {
 
                     throw new ServerException("Ошибка при работе с БД: такой товар в корзине не найден.");
                 }
-            }
-            else {
+            } else {
 
                 throw new ServerException("Ошибка при работе с БД: такой товар не найден.");
             }
-        }
-        catch (PDOException $exception) {
+        } catch (PDOException $exception) {
 
             throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
 
-    public function deleteOrderItem() {
+    public function deleteOrderItem()
+    {
 
         try {
 
@@ -142,13 +139,11 @@ class OrderItem {
                 $stmt->execute([$this->id]);
 
                 return "Позиция из чека успешно удалена.";
-            }
-            else {
+            } else {
 
                 throw new ServerException("Ошибка при работе с БД: такой товар в чеке нет.");
             }
-        }
-        catch (PDOException $exception) {
+        } catch (PDOException $exception) {
 
             throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }

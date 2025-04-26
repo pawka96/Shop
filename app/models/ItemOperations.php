@@ -2,7 +2,8 @@
 
 trait ItemOperations {
 
-    protected function isExist(PDO $pdo, $item_id): bool {
+    protected function isExist(PDO $pdo, $item_id): bool
+    {
 
         // проверка наличия товара в БД
 
@@ -13,7 +14,8 @@ trait ItemOperations {
     }
 
 
-    protected function getPrice(PDO $pdo, $item_id): float {
+    protected function getPrice(PDO $pdo, $item_id): float
+    {
 
         // получение цены товара
 
@@ -23,7 +25,8 @@ trait ItemOperations {
         return $stmt->fetchColumn();
     }
 
-    protected function checkCart(PDO $pdo, $cart_id, $item_id): ?array {
+    protected function checkCart(PDO $pdo, $cart_id, $item_id): ?array
+    {
 
         // проверка наличия определенного товара в корзине (получение его цены и количества)
 

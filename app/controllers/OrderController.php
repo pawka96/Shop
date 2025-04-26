@@ -1,7 +1,6 @@
 <?php
 
-class OrderController
-{
+class OrderController {
 
     private Order $order;
 
@@ -30,12 +29,10 @@ class OrderController
                     ]
                 ]
             ]);
-        }
-        catch (ServerException $exception) {
+        } catch (ServerException $exception) {
 
             return $exception->handle();
-        }
-        catch (Exception $exception) {
+        } catch (Exception $exception) {
 
             error_log($exception->getMessage());
             http_response_code(500);
@@ -77,12 +74,10 @@ class OrderController
                     ]
                 ]
             ]);
-        }
-        catch (ServerException $exception) {
+        } catch (ServerException $exception) {
 
             return $exception->handle();
-        }
-        catch (Exception $exception) {
+        } catch (Exception $exception) {
 
             error_log($exception->getMessage());
             http_response_code(500);
@@ -119,12 +114,10 @@ class OrderController
                         ]
                     ]
                 ]);
-            }
-            catch (ServerException $exception) {
+            } catch (ServerException $exception) {
 
                 return $exception->handle();
-            }
-            catch (Exception $exception) {
+            } catch (Exception $exception) {
 
                 error_log($exception->getMessage());
                 http_response_code(500);
@@ -147,7 +140,8 @@ class OrderController
         }
     }
 
-    public function delete() {
+    public function delete()
+    {
 
         try {
 
@@ -165,12 +159,10 @@ class OrderController
                     ]
                 ]
             ]);
-        }
-        catch (ServerException $exception) {
+        } catch (ServerException $exception) {
 
             return $exception->handle();
-        }
-        catch (Exception $exception) {
+        } catch (Exception $exception) {
 
             error_log($exception->getMessage());
             http_response_code(500);

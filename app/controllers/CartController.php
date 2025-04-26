@@ -9,7 +9,7 @@ class CartController {
         $this->cart = $cart;
     }
 
-    public function add($request) {
+    public function create($request) {
 
         $item_id = $request['item_id'] ?? null;
         $quantity = $request['quantity'] ?? null;
@@ -21,17 +21,18 @@ class CartController {
             http_response_code(400);
 
             return json_encode([
-               'status' => 'error',
-               'message' => 'Некорректные данные.'
+                'status' => 'error',
+                'message' => 'Некорректные данные.'
             ]);
         }
         else {
 
             try {
 
-                // формирование ответа при успешном добавлении
+                $response = $this->cart->createCart($item_id, $quantity);
 
-                $response = $this->cart->addItem($item_id, $quantity);
+                // в случае успешного создания
+
                 http_response_code(201);
 
                 return json_encode([
@@ -58,6 +59,151 @@ class CartController {
                     'message' => $exception->getMessage()
                 ]);
             }
+        }
+    }
+
+    public function show() {
+
+        try {
+
+            // формирование успешного ответа
+
+            $response = $this->cart->showCart();
+
+            // получение массива товаров
+
+            $items = [];
+
+            foreach ($response as $item) {
+
+                $items[] = [
+                    'type' => 'item',
+                    'id' => $item['id'],
+                    'attributes' => [
+                        'name' => $item['name'],
+                        'brand' => $item['brand'],
+                        'price' => $item['price'],
+                        'quantity' => $item['quantity']
+                    ]
+                ];
+            }
+
+            $total_sum = $this->cart->getTotalSum();
+
+            http_response_code(200);
+
+            return json_encode([
+                'data' => [
+                    'type' => 'cart',
+                    'id' => $this->cart->getId(),
+                    'attributes' => [
+                        'total_sum' => $total_sum,
+                        'items' => $items
+                    ]
+                ]
+            ]);
+        }
+        catch (ServerException $exception) {
+
+            return $exception->handle();
+        }
+        catch (Exception $exception) {
+
+            error_log($exception->getMessage());
+            http_response_code(500);
+
+            return json_encode([
+                'status' => 'error',
+                'message' => $exception->getMessage()
+            ]);
+        }
+    }
+
+    public function update($request) {
+
+        $item_id = $request['item_id'] ?? null;
+        $quantity = $request['quantity'] ?? null;
+
+        if (!is_numeric($item_id) || !is_numeric($quantity) || $quantity <= 0) {
+
+            // формирование ошибки в случае некорректных данных
+
+            http_response_code(400);
+
+            return json_encode([
+                'status' => 'error',
+                'message' => 'Некорректные данные.'
+            ]);
+        }
+        else {
+
+            try {
+
+                // формирование ответа при успешном обновлении
+
+                $response = $this->cart->updateCart($item_id, $quantity);
+                http_response_code(204);
+
+                return json_encode([
+                    'data' => [
+                        'type' => 'cart',
+                        'id' => $this->cart->getId(),
+                        'attributes' => [
+                            'message' => $response
+                        ]
+                    ]
+                ]);
+            }
+            catch (ServerException $exception) {
+
+                return $exception->handle();
+            }
+            catch (Exception $exception) {
+
+                error_log($exception->getMessage());
+                http_response_code(500);
+
+                return json_encode([
+                    'status' => 'error',
+                    'message' => $exception->getMessage()
+                ]);
+            }
+        }
+    }
+
+    public function delete() {
+
+        try {
+
+            $response = $this->cart->deleteCart();
+
+            // в случае успешной очистки корзины
+
+            http_response_code(204);
+
+            return json_encode([
+                'data' => [
+                    'type' => 'cart',
+                    'id' => $this->cart->getId(),
+                    'attributes' => [
+                        'message' => $response
+                    ]
+                ]
+            ]);
+        }
+        catch (ServerException $exception) {
+
+            return $exception->handle();
+        }
+        catch (Exception $exception) {
+
+            error_log($exception->getMessage());
+            http_response_code(500);
+
+            return json_encode([
+                'status' => 'error',
+                'message' => $exception->getMessage()
+            ]);
         }
     }
 
@@ -110,134 +256,6 @@ class CartController {
                     'message' => $exception->getMessage()
                 ]);
             }
-        }
-    }
-
-    public function clear() {
-
-        try {
-
-            $response = $this->cart->clearCart();
-
-            // в случае успешной очистки корзины
-
-            http_response_code(204);
-
-            return json_encode([
-                'data' => [
-                    'type' => 'cart',
-                    'id' => $this->cart->getId(),
-                    'attributes' => [
-                        'message' => $response
-                    ]
-                ]
-            ]);
-        }
-        catch (ServerException $exception) {
-
-            return $exception->handle();
-        }
-        catch (Exception $exception) {
-
-            error_log($exception->getMessage());
-            http_response_code(500);
-
-            return json_encode([
-                'status' => 'error',
-                'message' => $exception->getMessage()
-            ]);
-        }
-    }
-
-    public function read() {
-
-        try {
-
-            // формирование успешного ответа
-
-            $response = $this->cart->readCart();
-
-            // получение массива товаров
-
-            $items = [];
-
-            foreach ($response as $item) {
-
-                $items[] = [
-                    'type' => 'item',
-                    'id' => $item['id'],
-                    'attributes' => [
-                        'name' => $item['name'],
-                        'brand' => $item['brand'],
-                        'price' => $item['price'],
-                        'quantity' => $item['quantity']
-                    ]
-                ];
-            }
-
-            $total_sum = $this->cart->getTotalSum();
-
-            http_response_code(200);
-
-            return json_encode([
-                'data' => [
-                    'type' => 'cart',
-                    'id' => $this->cart->getId(),
-                    'attributes' => [
-                        'items' => $items,
-                        'total_sum' => $total_sum
-                    ]
-                ]
-            ]);
-        }
-        catch (ServerException $exception) {
-
-            return $exception->handle();
-        }
-        catch (Exception $exception) {
-
-            error_log($exception->getMessage());
-            http_response_code(500);
-
-            return json_encode([
-                'status' => 'error',
-                'message' => $exception->getMessage()
-            ]);
-        }
-    }
-
-    public function getSum() {
-
-        try {
-
-            // формирование успешного ответа
-
-            $response = $this->cart->getTotalSum();
-            http_response_code(200);
-
-            return json_encode([
-                'data' => [
-                    'type' => 'cart',
-                    'id' => $this->cart->getId(),
-                    'attributes' => [
-                        'total_sum' => $response
-                    ]
-                ]
-            ]);
-        }
-        catch (ServerException $exception) {
-
-            return $exception->handle();
-        }
-        catch (Exception $exception) {
-
-            error_log($exception->getMessage());
-            http_response_code(500);
-
-            return json_encode([
-                'status' => 'error',
-                'message' => $exception->getMessage()
-            ]);
         }
     }
 }
