@@ -1,6 +1,7 @@
 <?php
 
-class Item {
+class Item
+{
 
     private int $id;
     private PDO $pdo;
@@ -9,6 +10,7 @@ class Item {
     {
 
         try {
+
             $this->pdo = new PDO('psql:host=localhost;dbname=shop', 'postgres', 'Hjccbzlkzheccrb[');
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         } catch (PDOException $exception) {
@@ -23,8 +25,24 @@ class Item {
         return $this->id;
     }
 
-    public function createItem($name, $brand, $price, $category_id, $description)
-    {
+    public function getAllItems(): ?array {
+
+        try {
+
+            $stmt = $this->pdo->query('SELECT "item".id, "item".name, "item".brand, category.name as category,
+                                                "item".price, "item".description 
+                                                FROM "item"
+                                                JOIN category ON category.id = "item".category_id');
+
+            return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: null;
+        }
+        catch (PDOException $exception) {
+
+            throw new ServerException("Ошибка при подключении к БД: " . $exception->getMessage());
+        }
+    }
+
+    public function createItem($name, $brand, $price, $category_id, $description) {
 
         try {
 
@@ -46,40 +64,32 @@ class Item {
 
                 return "Новый товар успешно добавлен в БД.";
             }
-        } catch (PDOException $exception) {
+        }
+        catch (PDOException $exception) {
 
             throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
 
-    public function readItem()
-    {
+    public function showItem(int $id): ?array {
 
         try {
 
-            if ($this->id) {
-
-                $stmt = $this->pdo->prepare('SELECT  "item".name, "item".brand, "item".price,
-                                                    "item".description, category.name as category FROM "item"
-                                                    JOIN category ON category.id = "item".category_id
+            $stmt = $this->pdo->prepare('SELECT "item".id, "item".name, "item".brand, category.name, "item".price, "item".description 
+                                                    FROM "item" JOIN category ON category.id = "item".category_id
                                                     WHERE item.id = ?');
 
-                $stmt->execute([$this->id]);
-                $item = $stmt->fetch(PDO::FETCH_ASSOC);
+            $stmt->execute([$id]);
 
-                return $item;
-            } else {
-
-                throw new ServerException("Ошибка при работе с БД: товар не найден.");
-            }
-        } catch (PDOException $exception) {
+            return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+        }
+        catch (PDOException $exception) {
 
             throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
 
-    public function updateItem(...$data)
-    {
+    public function updateItem(...$data) {
 
         try {
 
@@ -101,18 +111,19 @@ class Item {
                 $stmt->execute([...$values, $this->id]);
 
                 return "Данные товара успешно обновлены.";
-            } else {
+            }
+            else {
 
                 throw new ServerException("Ошибка при работе с БД: товар не найден.");
             }
-        } catch (PDOException $exception) {
+        }
+        catch (PDOException $exception) {
 
             throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
 
-    public function deleteItem()
-    {
+    public function deleteItem() {
 
         try {
 
@@ -122,11 +133,13 @@ class Item {
                 $stmt->execute([$this->id]);
 
                 return "Товар успешно удален.";
-            } else {
+            }
+            else {
 
                 throw new ServerException("Ошибка при работе с БД: товар не найден.");
             }
-        } catch (PDOException $exception) {
+        }
+        catch (PDOException $exception) {
 
             throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }

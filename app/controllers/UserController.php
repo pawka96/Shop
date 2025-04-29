@@ -105,8 +105,7 @@ class UserController {
         }
     }
 
-    public function authenticate($request)
-    {
+    public function authenticate($request) {
 
         $email = $request['email'] ?? null;
         $password = $request['password'] ?? null;
@@ -121,7 +120,8 @@ class UserController {
                 'status' => 'error',
                 'message' => 'Все поля должны быть заполнены.'
             ]);
-        } else {
+        }
+        else {
 
             try {
 
@@ -139,10 +139,12 @@ class UserController {
                         ]
                     ]
                 ]);
-            } catch (ServerException $exception) {
+            }
+            catch (ServerException $exception) {
 
                 return $exception->handle();
-            } catch (Exception $exception) {
+            }
+            catch (Exception $exception) {
 
                 error_log($exception->getMessage());
                 http_response_code(500);
@@ -155,39 +157,136 @@ class UserController {
         }
     }
 
-    public function index()
-    {
+    public function show($request) {
+
+        $id = $request['id'] ?? null;
+
+        if (!is_numeric($id)) {
+
+            // формирование ошибки в случае неверных данных
+
+            http_response_code(400);
+
+            return json_encode([
+                'status' => 'error',
+                'message' => 'Неверный формат данных.'
+            ]);
+        }
+        else {
+
+            try {
+
+                // формирование успешного ответа
+
+                $response = $this->user->showUser($id);
+                http_response_code(200);
+
+                return json_encode([
+                    'data' => [
+                        'type' => 'user',
+                        'id' => $id,
+                        'attributes' => [
+                            'name' => $response['name'],
+                            'email' => $response['email'],
+                            'password' => $response['password'],
+                            'phone_num' => $response['phone_num'],
+                            'status' => $response['status']
+                        ]
+                    ]
+                ]);
+            }
+            catch (ServerException $exception) {
+
+                return $exception->handle();
+            }
+            catch (Exception $exception) {
+
+                error_log($exception->getMessage());
+                http_response_code(500);
+
+                return json_encode([
+                    'status' => 'error',
+                    'message' => $exception->getMessage()
+                ]);
+            }
+        }
+    }
+
+    public function update($request) {
+
+        $data = $request['data'] ?? null;
+
+        if (empty($data)) {
+
+            // формирование ошибки в случае отсутствия данных
+
+            http_response_code(400);
+
+            return json_encode([
+                'status' => 'error',
+                'message' => 'Нет данных для добавления.'
+            ]);
+        }
+        else {
+
+            try {
+
+                // формирование успешного ответа
+
+                $response = $this->user->updateUser($data);
+                http_response_code(204);
+
+                return json_encode([
+                    'data' => [
+                        'type' => 'user',
+                        'id' => $this->user->getId(),
+                        'attributes' => [
+                            'message' => $response
+                        ]
+                    ]
+                ]);
+            }
+            catch (ServerException $exception) {
+
+                return $exception->handle();
+            }
+            catch (Exception $exception) {
+
+                error_log($exception->getMessage());
+                http_response_code(500);
+
+                return json_encode([
+                    'status' => 'error',
+                    'message' => $exception->getMessage()
+                ]);
+            }
+        }
+    }
+
+    public function delete() {
 
         try {
 
-            // формирование ответа для получения всех пользователей
+            // формирование успешного ответа
 
-            $response = $this->user->getAllUsers();
-            http_response_code(200);
+            $response = $this->user->deleteUser();
+            http_response_code(204);
 
-            $users = [];
-
-            // получение массива пользователей
-
-            foreach ($response as $user) {
-
-                $users[] = [
+            return json_encode([
+                'data' => [
                     'type' => 'user',
-                    'id' => $response['id'],
+                    'id' => $this->user->getId(),
                     'attributes' => [
-                        'name' => $response['name'],
-                        'email' => $response['email'],
-                        'phone_num' => $response['phone_num'],
-                        'password' => $response['password'],
+                        'message' => $response
                     ]
-                ];
-            }
-
-            return json_encode(['data' => [$users]]);
-        } catch (ServerException $exception) {
+                ]
+            ]);
+        }
+        catch (ServerException $exception) {
 
             return $exception->handle();
-        } catch (Exception $exception) {
+        }
+        catch (Exception $exception) {
 
             error_log($exception->getMessage());
             http_response_code(500);

@@ -10,7 +10,8 @@ class ServerException extends Exception {
     public function handle() {
 
         error_log($this->getMessage());
-        http_response_code(500);
+        $this->code = $this->getCode();
+        http_response_code($this->code);
 
         return json_encode([
             'status' => 'error',

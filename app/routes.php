@@ -4,29 +4,35 @@ $routes = [
     '/' => 'HomeController@index',
     'about' => 'AboutController@index',
     'contact' => 'ContactController@index',
-    'users' => [
-        'POST' => 'UserController@register',
-        'GET' => 'UserController@authenticate'
+    'user' => [
+        'POST' => ['/register' => 'UserController@register',
+                    '/auth' => 'UserController@authenticate'
+        ],
+        'GET' => ['/user' => 'UserController@index',
+                    '/user/{id}' => 'UserController@show',
+        ],
+        'PUT /user/{id}' => 'UserController@delete',
+        'DELETE /user/{id}' => 'UserController@delete',
     ],
-    'orders' => [
+    'order' => [
         'POST' => 'OrderController@create',
         'GET' => 'OrderController@read',
         'PUT' => 'OrderController@update',
         'DELETE' => 'OrderController@delete'
     ],
-    'items' => [
+    'item' => [
         'POST' => 'ItemController@create',
         'GET' => 'ItemController@read',
         'PUT' => 'ItemController@update',
         'DELETE' => 'ItemController@delete'
     ],
-    'categories' => [
+    'category' => [
         'POST' => 'CategoryController@create',
         'GET' => 'CategoryController@read',
         'PUT' => 'CategoryController@update',
         'DELETE' => 'CategoryController@delete'
     ],
-    'order_items' => [
+    'order_item' => [
         'POST' => 'OrderItemController@create',
         'GET' => 'OrderItemController@read',
         'PUT' => 'OrderItemController@update',
@@ -42,19 +48,6 @@ $routes = [
     ]
 ];
 
-/*$routes = [
-    'cart' => [
-        'POST' => 'CartController@add', // Добавить товар в корзину
-        'GET' => [
-            'show' => 'CartController@show', // Показать содержимое корзины
-            'sum' => 'CartController@getSum', // Получить сумму товаров
-        ],
-        'DELETE' => [
-            '{item_id}' => 'CartController@remove', // Удалить конкретный товар из корзины
-            'clear' => 'CartController@clear' // Очистить всю корзину
-        ]
-    ],
-];*/
 
 function handleRequest($uri) {
     switch ($uri) {

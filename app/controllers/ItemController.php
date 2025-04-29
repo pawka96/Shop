@@ -4,14 +4,54 @@ class ItemController {
 
     private Item $item;
 
-    public function __construct(Item $item)
-    {
+    public function __construct(Item $item) {
 
         $this->item = $item;
     }
 
-    public function create($request)
-    {
+    public function index() {
+
+        try {
+
+            // формирование успешного ответа
+
+            $response = $this->item->getAllItems();
+            http_response_code(200);
+
+            // получение массива пользователей
+
+            $items = [];
+
+            foreach ($response as $item) {
+
+                $items[] = [
+                    'type' => 'item',
+                    'id' => $item['id'],
+                    'attributes' => [
+                        'name' => $item['name'],
+                        'brand' => $item['brand'],
+                        'category' => $item['category'],
+                        'price' => $item['price'],
+                        'description' => $item['description']
+                    ]
+                ];
+            }
+
+            return json_encode(['data' => $items]);
+        }
+        catch (Exception $exception) {
+
+            error_log($exception->getMessage());
+            http_response_code(500);
+
+            return json_encode([
+                'status' => 'error',
+                'message' => $exception->getMessage()
+            ]);
+        }
+    }
+
+    public function create($request) {
 
         $name = $request['name'] ?? null;
         $brand = $request['brand'] ?? null;
@@ -41,10 +81,12 @@ class ItemController {
                         ]
                     ]
                 ]);
-            } catch (ServerException $exception) {
+            }
+            catch (ServerException $exception) {
 
                 return $exception->handle();
-            } catch (Exception $exception) {
+            }
+            catch (Exception $exception) {
 
                 error_log($exception->getMessage());
                 http_response_code(500);
@@ -54,7 +96,8 @@ class ItemController {
                     'message' => $exception->getMessage()
                 ]);
             }
-        } else {
+        }
+        else {
 
             http_response_code(400);
 
@@ -65,46 +108,62 @@ class ItemController {
         }
     }
 
-    public function read()
-    {
+    public function show($request) {
 
-        try {
+        $id = $request['id'] ?? null;
 
-            // формирование успешного ответа
+        if (!is_numeric($id)) {
 
-            $response = $this->item->readItem();
-            http_response_code(200);
+            // формирование ошибки в случае неверных данных
 
-            return json_encode([
-                'data' => [
-                    'type' => 'item',
-                    'id' => $this->item->getId(),
-                    'attributes' => [
-                        'name' => $response['name'],
-                        'brand' => $response['brand'],
-                        'price' => $response['price'],
-                        'category_name' => $response['category'],
-                        'description' => $response['description']
-                    ]
-                ]
-            ]);
-        } catch (ServerException $exception) {
-
-            return $exception->handle();
-        } catch (Exception $exception) {
-
-            error_log($exception->getMessage());
-            http_response_code(500);
+            http_response_code(400);
 
             return json_encode([
                 'status' => 'error',
-                'message' => $exception->getMessage()
+                'message' => 'Неверный формат данных.'
             ]);
+        }
+        else {
+
+            try {
+
+                // формирование успешного ответа
+
+                $response = $this->item->showItem($id);
+                http_response_code(200);
+
+                return json_encode([
+                    'data' => [
+                        'type' => 'item',
+                        'id' => $id,
+                        'attributes' => [
+                            'name' => $response['name'],
+                            'brand' => $response['brand'],
+                            'price' => $response['price'],
+                            'category_name' => $response['category'],
+                            'description' => $response['description']
+                        ]
+                    ]
+                ]);
+            }
+            catch (ServerException $exception) {
+
+                return $exception->handle();
+            }
+            catch (Exception $exception) {
+
+                error_log($exception->getMessage());
+                http_response_code(500);
+
+                return json_encode([
+                    'status' => 'error',
+                    'message' => $exception->getMessage()
+                ]);
+            }
         }
     }
 
-    public function update($request)
-    {
+    public function update($request) {
 
         $data = $request['data'] ?? null;
 
@@ -118,7 +177,8 @@ class ItemController {
                 'status' => 'error',
                 'message' => 'Нет данных для добавления.'
             ]);
-        } else {
+        }
+        else {
 
             try {
 
@@ -136,10 +196,12 @@ class ItemController {
                         ]
                     ]
                 ]);
-            } catch (ServerException $exception) {
+            }
+            catch (ServerException $exception) {
 
                 return $exception->handle();
-            } catch (Exception $exception) {
+            }
+            catch (Exception $exception) {
 
                 error_log($exception->getMessage());
                 http_response_code(500);
@@ -152,8 +214,7 @@ class ItemController {
         }
     }
 
-    public function delete()
-    {
+    public function delete() {
 
         try {
 
@@ -171,10 +232,12 @@ class ItemController {
                     ]
                 ]
             ]);
-        } catch (ServerException $exception) {
+        }
+        catch (ServerException $exception) {
 
             return $exception->handle();
-        } catch (Exception $exception) {
+        }
+        catch (Exception $exception) {
 
             error_log($exception->getMessage());
             http_response_code(500);
