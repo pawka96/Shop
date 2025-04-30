@@ -18,7 +18,7 @@ class ItemController {
             $response = $this->item->getAllItems();
             http_response_code(200);
 
-            // получение массива пользователей
+            // получение массива товаров
 
             $items = [];
 
@@ -30,9 +30,14 @@ class ItemController {
                     'attributes' => [
                         'name' => $item['name'],
                         'brand' => $item['brand'],
-                        'category' => $item['category'],
                         'price' => $item['price'],
-                        'description' => $item['description']
+                        'description' => $item['description'],
+                        'category' => [
+                            'id' => $item['category_id'],
+                            'attributes' => [
+                                'name' => $item['category_name']
+                            ]
+                        ]
                     ]
                 ];
             }
@@ -140,8 +145,13 @@ class ItemController {
                             'name' => $response['name'],
                             'brand' => $response['brand'],
                             'price' => $response['price'],
-                            'category_name' => $response['category'],
-                            'description' => $response['description']
+                            'description' => $response['description'],
+                            'category' => [
+                                'id' => $response['cat_id'],
+                                'attributes' => [
+                                    'name' => $response['cat_name']
+                                ]
+                            ]
                         ]
                     ]
                 ]);

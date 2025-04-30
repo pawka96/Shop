@@ -29,8 +29,8 @@ class Item
 
         try {
 
-            $stmt = $this->pdo->query('SELECT "item".id, "item".name, "item".brand, category.name as category,
-                                                "item".price, "item".description 
+            $stmt = $this->pdo->query('SELECT "item".id, "item".name, "item".brand, category.id as cat_id,
+                                                category.name as cat_name, "item".price, "item".description 
                                                 FROM "item"
                                                 JOIN category ON category.id = "item".category_id');
 
@@ -55,7 +55,8 @@ class Item
 
                 throw new ServerException("Ошибка при работе с БД:
                                                     товар с таким названием ($name) и такого бренда ($brand) уже существует.");
-            } else {
+            }
+            else {
 
                 $stmt = $this->pdo->prepare('INSERT INTO "item" (category_id, name, brand, price, description)
                                                     VALUES (?, ?, ?, ?, ?) RETURNING id;');
@@ -75,9 +76,10 @@ class Item
 
         try {
 
-            $stmt = $this->pdo->prepare('SELECT "item".id, "item".name, "item".brand, category.name, "item".price, "item".description 
-                                                    FROM "item" JOIN category ON category.id = "item".category_id
-                                                    WHERE item.id = ?');
+            $stmt = $this->pdo->prepare('SELECT "item".id, "item".name, "item".brand, category.id as cat_id,
+                                                category.name as cat_name, "item".price, "item".description 
+                                                FROM "item" JOIN category ON category.id = "item".category_id
+                                                WHERE item.id = ?');
 
             $stmt->execute([$id]);
 

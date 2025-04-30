@@ -4,14 +4,51 @@ class CategoryController {
 
     private Category $category;
 
-    public function __construct(Category $category)
-    {
+    public function __construct(Category $category) {
 
         $this->category = $category;
     }
 
-    public function create($request)
-    {
+    public function index() {
+
+        try {
+
+            // формирование успешного ответа
+
+            $response = $this->category->getAllCategories();
+            http_response_code(200);
+
+            // получение массива категорий
+
+            $categories = [];
+
+            foreach ($response as $category) {
+
+                $categories[] = [
+                    'type' => 'item',
+                    'id' => $category['id'],
+                    'attributes' => [
+                        'name' => $category['name'],
+
+                    ]
+                ];
+            }
+
+            return json_encode(['data' => $categories]);
+        }
+        catch (Exception $exception) {
+
+            error_log($exception->getMessage());
+            http_response_code(500);
+
+            return json_encode([
+                'status' => 'error',
+                'message' => $exception->getMessage()
+            ]);
+        }
+    }
+
+    public function create($request) {
 
         $name = $request['name'] ?? null;
         $description = $request['description'] ?? null;
@@ -26,7 +63,8 @@ class CategoryController {
                 'status' => 'error',
                 'message' => 'Данные для создания отсутствуют.'
             ]);
-        } else {
+        }
+        else {
 
             try {
 
@@ -43,10 +81,12 @@ class CategoryController {
                         ]
                     ]
                 ]);
-            } catch (ServerException $exception) {
+            }
+            catch (ServerException $exception) {
 
                 $exception->handle();
-            } catch (Exception $exception) {
+            }
+            catch (Exception $exception) {
 
                 error_log($exception->getMessage());
                 http_response_code(500);
@@ -59,59 +99,59 @@ class CategoryController {
         }
     }
 
-    public function read()
-    {
+    public function show($request) {
 
-        try {
+        $id = $request['id'] ?? null;
 
-            // получение ответа при успешном запросе
+        if (!is_numeric($id)) {
 
-            $response = $this->category->readCategory();
-            http_response_code(200);
+            // формирование ошибки в случае неверных данных
 
-            // получение массива товаров
-
-            $items = [];
-
-            foreach ($response as $item) {
-
-                $items[] = [
-                    'type' => 'item',
-                    'id' => $item['item_id'],
-                    'attributes' => [
-                        'name' => $item['item_name'],
-                    ]
-                ];
-            }
-
-            return json_encode([
-                'data' => [
-                    'type' => 'category',
-                    'id' => $this->category->getId(),
-                    'attributes' => [
-                        'name' => $response[0]['name'],
-                        'description' => $response[0]['description'],
-                        'items' => $items
-                    ]
-                ]
-            ]);
-        } catch (ServerException $exception) {
-
-            $exception->handle();
-        } catch (Exception $exception) {
-
-            error_log($exception->getMessage());
-            http_response_code(500);
+            http_response_code(400);
 
             return json_encode([
                 'status' => 'error',
-                'message' => $exception->getMessage()
+                'message' => 'Неверный формат данных.'
             ]);
+        }
+        else {
+
+            try {
+
+                // получение ответа при успешном запросе
+
+                $response = $this->category->showCategory($id);
+                http_response_code(200);
+
+                return json_encode([
+                    'data' => [
+                        'type' => 'category',
+                        'id' => $id,
+                        'attributes' => [
+                            'name' => $response['name'],
+                            'description' => $response['description'],
+                        ]
+                    ]
+                ]);
+            }
+            catch (ServerException $exception) {
+
+                $exception->handle();
+            }
+            catch (Exception $exception) {
+
+                error_log($exception->getMessage());
+                http_response_code(500);
+
+                return json_encode([
+                    'status' => 'error',
+                    'message' => $exception->getMessage()
+                ]);
+            }
         }
     }
 
-    public function update($request)
-    {
+    public function update($request) {
 
         $data = $request['data'] ?? null;
 
@@ -123,14 +163,14 @@ class CategoryController {
                 'status' => 'error',
                 'message' => 'Нет данных для добавления.'
             ]);
-        } else {
+        }
+        else {
 
             try {
 
                 // формирование ответа при удачном обновлении
 
                 $response = $this->category->updateCategory($data);
-
                 http_response_code(204);
 
                 return json_encode([
@@ -142,10 +182,12 @@ class CategoryController {
                         ]
                     ]
                 ]);
-            } catch (ServerException $exception) {
+            }
+            catch (ServerException $exception) {
 
                 $exception->handle();
-            } catch (Exception $exception) {
+            }
+            catch (Exception $exception) {
 
                 error_log($exception->getMessage());
                 http_response_code(500);
@@ -158,15 +200,13 @@ class CategoryController {
         }
     }
 
-    public function delete()
-    {
+    public function delete() {
 
         try {
 
             // формирование ответа при успешном удалении
 
             $response = $this->category->deleteCategory();
-
             http_response_code(204);
 
             return json_encode([
@@ -178,10 +218,12 @@ class CategoryController {
                     ]
                 ]
             ]);
-        } catch (ServerException $exception) {
+        }
+        catch (ServerException $exception) {
 
             return $exception->handle();
-        } catch (Exception $exception) {
+        }
+        catch (Exception $exception) {
 
             error_log($exception->getMessage());
             http_response_code(500);

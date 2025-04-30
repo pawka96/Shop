@@ -8,95 +8,94 @@ class Order {
 
     private Cart $cart;
 
-    public function __construct(Cart $cart)
-    {
+    public function __construct(Cart $cart) {
 
         $this->cart = $cart;
 
         try {
+
             $this->pdo = new PDO('psql:host=localhost;dbname=shop', 'postgres', 'Hjccbzlkzheccrb[');
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        } catch (PDOException $exception) {
+        }
+        catch (PDOException $exception) {
 
             throw new ServerException("Ошибка при подключении к БД: " . $exception->getMessage());;
         }
     }
 
-    public function getId(): int
-    {
+    public function getId(): int {
 
         return $this->id;
     }
 
-    public function getCart(): Cart
-    {
+    public function getCart(): Cart {
 
         return $this->cart;
     }
 
-    public function createOrder()
+    public function getAllOrders(): ?array {
+
+        try {
+
+            $stmt = $this->pdo->query('SELECT id, user_id, date, total_sum, status FROM "order"');
+
+            return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: null;
+        }
+        catch (PDOException $exception) {
+
+            throw new ServerException("Ошибка при подключении к БД: " . $exception->getMessage());
+        }
+    }
+
+    public function createOrder($user_id, $date, $total_sum, $status)
     {
 
         try {
 
-            // проверка наличия в БД записей о пользователе и корзине
+            // проверка на существование заказа
 
-            $stmt = $this->pdo->prepare('SELECT cart.total_sum FROM cart
-                                                JOIN "user" ON "user".id = cart.user_id
-                                                WHERE cart.id = ?');
+            if ($this->id) {
 
-            $stmt->execute([$this->cart->getId()]);
+                throw new ServerException("Ошибка при работе с БД: такой заказ уже создан.");
+            }
+            else {
 
-            if ($total_sum = $stmt->fetchColumn()) {
+                // создание нового заказа
 
                 $stmt = $this->pdo->prepare('INSERT INTO "order" (user_id, date, total_sum, status)
-                                                    VALUES (?, NOW(), ?, создан) RETURNING id');
+                                                    VALUES(?, ?, ?, ?) RETURNING id');
 
-                $stmt->execute([$this->cart->getUser()->getId(), $total_sum]);
+                $stmt->execute([$user_id, $date, $total_sum, $status]);
                 $this->id = $stmt->fetchColumn();
 
                 return "Заказ успешно создан";
-            } else {
-
-                throw new ServerException("Ошибка при работе с БД: товары в корзину не добавлены.");
             }
-        } catch (PDOException $exception) {
+        }
+        catch (PDOException $exception) {
 
             throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
 
-    public function readOrder()
-    {
+    public function showOrder(int $id): ?array {
 
         try {
 
-            // проверка наличия заказа в БД
+            $stmt = $this->pdo->prepare('SELECT id, user_id, date, total_sum, status
+                                                FROM "order" WHERE "order".id = ?');
 
-            if ($this->id) {
+            $stmt->execute([$id]);
 
-                $stmt = $this->pdo->prepare('SELECT "user".id, "user".name, "user".email, "user".phone_num,
-                                                    "order".date, "order".total_sum, "order".status FROM "order"
-                                                    JOIN "user" ON "user".id = "order".user_id
-                                                    WHERE "order".id = ?');
-
-                $stmt->execute([$this->id]);
-                $order = $stmt->fetch(PDO::FETCH_ASSOC);
-
-                return $order;
-            } else {
-
-                throw new ServerException("Ошибка при работе с БД: такой заказ не найден.");
-            }
-        } catch (PDOException $exception) {
+            return $$stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+        }
+        catch (PDOException $exception) {
 
             error_log($exception->getMessage());
             throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
 
-    public function updateOrder($status)
-    {
+    public function updateOrder($status) {
 
         if ($this->id) {
 
@@ -106,18 +105,19 @@ class Order {
                 $stmt->execute([$status, $this->id]);
 
                 return "Новый статус заказа: " . $status;
-            } catch (PDOException $exception) {
+            }
+            catch (PDOException $exception) {
 
                 throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
             }
-        } else {
+        }
+        else {
 
             throw new ServerException("Ошибка при работе с БД: такой заказ не найден.");
         }
     }
 
-    public function deleteOrder()
-    {
+    public function deleteOrder() {
 
         try {
 
@@ -127,11 +127,13 @@ class Order {
                 $stmt->execute([$this->id]);
 
                 return "Заказ успешно удален.";
-            } else {
+            }
+            else {
 
                 throw new ServerException("Ошибка при работе с БД: такой заказ не найден.");
             }
-        } catch (PDOException $exception) {
+        }
+        catch (PDOException $exception) {
 
             throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }

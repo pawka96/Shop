@@ -15,22 +15,28 @@ $routes = [
         'DELETE /user/{id}' => 'UserController@delete',
     ],
     'order' => [
-        'POST' => 'OrderController@create',
-        'GET' => 'OrderController@read',
-        'PUT' => 'OrderController@update',
-        'DELETE' => 'OrderController@delete'
+        'POST /order' => 'OrderController@create',
+        'GET' => ['/order' => 'OrderController@index',
+                    '/order/{id}' => 'OrderController@show'
+        ],
+        'PUT /order/{id}' => 'OrderController@update',
+        'DELETE /order{id}' => 'OrderController@delete'
     ],
     'item' => [
-        'POST' => 'ItemController@create',
-        'GET' => 'ItemController@read',
-        'PUT' => 'ItemController@update',
-        'DELETE' => 'ItemController@delete'
+        'POST /item' => 'ItemController@create',
+        'GET' => ['/item' => 'ItemController@index',
+                    '/item/{id}' => 'ItemController@show'
+        ],
+        'PUT /item/{id}' => 'ItemController@update',
+        'DELETE /item/{id}' => 'ItemController@delete'
     ],
     'category' => [
-        'POST' => 'CategoryController@create',
-        'GET' => 'CategoryController@read',
-        'PUT' => 'CategoryController@update',
-        'DELETE' => 'CategoryController@delete'
+        'POST /category' => 'CategoryController@create',
+        'GET' => ['/category' => 'CategoryController@index',
+                    '/category/{id}' => 'CategoryController@show'
+        ],
+        'PUT /category{id}' => 'CategoryController@update',
+        'DELETE /category/{id}' => 'CategoryController@delete'
     ],
     'order_item' => [
         'POST' => 'OrderItemController@create',
