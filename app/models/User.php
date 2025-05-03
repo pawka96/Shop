@@ -150,21 +150,14 @@ class User {
         }
     }
 
-    public function deleteUser() {
+    public function deleteUser(int $id) {
 
         try {
 
-            if ($this->id) {
+            $stmt = $this->pdo->prepare('DELETE FROM "user" WHERE id = ?');
+            $stmt->execute([$this->id]);
 
-                $stmt = $this->pdo->prepare('DELETE FROM "user" WHERE id = ?');
-                $stmt->execute([$this->id]);
-
-                return "Пользователь успешно удален.";
-            }
-            else {
-
-                throw new ServerException("Ошибка при работе с БД: пользователь не найден.");
-            }
+            return "Пользователь успешно удален.";
         }
         catch (PDOException $exception) {
 

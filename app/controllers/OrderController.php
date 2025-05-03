@@ -214,38 +214,54 @@ class OrderController {
         }
     }
 
-    public function delete() {
+    public function delete($request) {
 
-        try {
+        $id = $request['id'] ?? null;
 
-            // формирование ответа при успешном удалении
+        if (!is_numeric($id)) {
 
-            $response = $this->order->deleteOrder();
-            http_response_code(204);
+            // формирование ошибки в случае неверных данных
 
-            return json_encode([
-                'data' => [
-                    'type' => 'order',
-                    'id' => $this->order->getId(),
-                    'attributes' => [
-                        'message' => $response
-                    ]
-                ]
-            ]);
-        }
-        catch (ServerException $exception) {
-
-            return $exception->handle();
-        }
-        catch (Exception $exception) {
-
-            error_log($exception->getMessage());
-            http_response_code(500);
+            http_response_code(400);
 
             return json_encode([
                 'status' => 'error',
-                'message' => $exception->getMessage()
+                'message' => 'Неверный формат данных.'
             ]);
+        }
+        else {
+
+            try {
+
+                // формирование ответа при успешном удалении
+
+                $response = $this->order->deleteOrder($id);
+                http_response_code(204);
+
+                return json_encode([
+                    'data' => [
+                        'type' => 'order',
+                        'id' => $this->order->getId(),
+                        'attributes' => [
+                            'message' => $response
+                        ]
+                    ]
+                ]);
+            }
+            catch (ServerException $exception) {
+
+                return $exception->handle();
+            }
+            catch (Exception $exception) {
+
+                error_log($exception->getMessage());
+                http_response_code(500);
+
+                return json_encode([
+                    'status' => 'error',
+                    'message' => $exception->getMessage()
+                ]);
+            }
         }
     }
 }

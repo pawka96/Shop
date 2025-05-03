@@ -20,7 +20,7 @@ $routes = [
                     '/order/{id}' => 'OrderController@show'
         ],
         'PUT /order/{id}' => 'OrderController@update',
-        'DELETE /order{id}' => 'OrderController@delete'
+        'DELETE /order/{id}' => 'OrderController@delete'
     ],
     'item' => [
         'POST /item' => 'ItemController@create',
@@ -39,23 +39,38 @@ $routes = [
         'DELETE /category/{id}' => 'CategoryController@delete'
     ],
     'order_item' => [
-        'POST' => 'OrderItemController@create',
-        'GET' => 'OrderItemController@read',
-        'PUT' => 'OrderItemController@update',
-        'DELETE' => 'OrderItemController@delete'
+        'POST /order/{id}/item' => 'OrderItemController@create',
+        'GET' => ['/order/{id}/item' => 'OrderItemController@index',
+                    '/order/{id}/item/{id}' => 'OrderItemController@show'
+        ],
+        'PUT /order/{id}/item/{id}' => 'OrderItemController@update',
+        'DELETE /order/{id}/item/{id}' => 'OrderItemController@delete'
     ],
     'cart' => [
         'POST /cart' => 'CartController@create',
         'GET /cart/{id}' => 'CartController@show',
-        'PUT /cart/{id}/item/{item_id}' => 'CartController@update',
+        'PUT /cart/{id}/item/{id}' => 'CartController@update',
         'DELETE' => ['/cart/{id}' => 'CartController@delete',
-                        '/cart/{id}/item/{item_id}' => 'CartController@remove',
+                        '/cart/{id}/item/{id}' => 'CartController@remove',
         ]
     ]
 ];
 
-
 function handleRequest($uri) {
+
+    switch ($uri) {
+        case 'user': ;
+        case 'order': ;
+    }
+}
+
+
+
+
+
+
+
+/*function handleRequest($uri) {
     switch ($uri) {
         case '/products':
             require_once 'controllers/ProductController.php';
@@ -70,4 +85,4 @@ function handleRequest($uri) {
             // Обработка 404
             break;
     }
-}
+}*/

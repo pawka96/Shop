@@ -47,8 +47,7 @@ class Order {
         }
     }
 
-    public function createOrder($user_id, $date, $total_sum, $status)
-    {
+    public function createOrder($user_id, $date, $total_sum, $status) {
 
         try {
 
@@ -117,21 +116,14 @@ class Order {
         }
     }
 
-    public function deleteOrder() {
+    public function deleteOrder(int $id) {
 
         try {
 
-            if ($this->id) {
+            $stmt = $this->pdo->prepare('DELETE FROM "order" WHERE id = ?');
+            $stmt->execute([$this->id]);
 
-                $stmt = $this->pdo->prepare('DELETE FROM "order" WHERE id = ?');
-                $stmt->execute([$this->id]);
-
-                return "Заказ успешно удален.";
-            }
-            else {
-
-                throw new ServerException("Ошибка при работе с БД: такой заказ не найден.");
-            }
+            return "Заказ успешно удален.";
         }
         catch (PDOException $exception) {
 

@@ -117,23 +117,16 @@ class Category {
         }
     }
 
-    public function deleteCategory() {
+    public function deleteCategory(int $id) {
 
         // проверка на наличие категории в БД
 
         try {
 
-            if ($this->id) {
+            $stmt = $this->pdo->prepare('DELETE FROM category WHERE id = ?');
+            $stmt->execute([$this->id]);
 
-                $stmt = $this->pdo->prepare('DELETE FROM category WHERE id = ?');
-                $stmt->execute([$this->id]);
-
-                return "Категория успешно удалена.";
-            }
-            else {
-
-                throw new ServerException("Ошибка при работе с БД: такой категории нет.");
-            }
+            return "Категория успешно удалена.";
         }
         catch (PDOException $exception) {
 

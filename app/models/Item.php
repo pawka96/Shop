@@ -125,21 +125,14 @@ class Item
         }
     }
 
-    public function deleteItem() {
+    public function deleteItem(int $id) {
 
         try {
 
-            if ($this->id) {
+            $stmt = $this->pdo->prepare('DELETE FROM "item" WHERE id = ?');
+            $stmt->execute([$this->id]);
 
-                $stmt = $this->pdo->prepare('DELETE FROM "item" WHERE id = ?');
-                $stmt->execute([$this->id]);
-
-                return "Товар успешно удален.";
-            }
-            else {
-
-                throw new ServerException("Ошибка при работе с БД: товар не найден.");
-            }
+            return "Товар успешно удален.";
         }
         catch (PDOException $exception) {
 

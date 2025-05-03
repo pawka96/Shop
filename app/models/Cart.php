@@ -114,21 +114,14 @@ class Cart {
         }
     }
 
-    public function deleteCart() {
+    public function deleteCart(int $id) {
 
         try {
 
-            if ($this->id) {
+            $stmt = $this->pdo->prepare('DELETE FROM cart WHERE id = ?');
+            $stmt->execute([$this->id]);
 
-                $stmt = $this->pdo->prepare('DELETE FROM cart WHERE id = ?');
-                $stmt->execute([$this->id]);
-
-                return "Корзина полностью очищена.";
-            }
-            else {
-
-                throw new ServerException("Ошибка при работе с БД: корзина уже пуста.");
-            }
+            return "Корзина полностью очищена.";
         }
         catch (PDOException $exception) {
 
@@ -161,7 +154,7 @@ class Cart {
                     // в случае наличия - изменение количества
 
                     $stmt = $this->pdo->prepare('UPDATE cart SET quantity = ?, total_sum = ?
-                                                            WHERE id = ? AND item_id = ? ');
+                                                        WHERE id = ? AND item_id = ? ');
 
                     $stmt->execute([$quantity, $itemPrice * $quantity, $this->id, $item_id]);
 
