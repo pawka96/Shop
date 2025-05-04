@@ -1,12 +1,12 @@
 <?php
 
-$routes = [
-    '/' => 'HomeController@index',
+ $routes = [
+    '' => 'HomeController@index',
     'about' => 'AboutController@index',
     'contact' => 'ContactController@index',
     'user' => [
-        'POST' => ['/register' => 'UserController@register',
-                    '/auth' => 'UserController@authenticate'
+        'POST' => ['/user/register' => 'UserController@register',
+                    '/user/auth' => 'UserController@authenticate'
         ],
         'GET' => ['/user' => 'UserController@index',
                     '/user/{id}' => 'UserController@show',
@@ -55,34 +55,3 @@ $routes = [
         ]
     ]
 ];
-
-function handleRequest($uri) {
-
-    switch ($uri) {
-        case 'user': ;
-        case 'order': ;
-    }
-}
-
-
-
-
-
-
-
-/*function handleRequest($uri) {
-    switch ($uri) {
-        case '/products':
-            require_once 'controllers/ProductController.php';
-            $controller = new ProductController();
-            $controller->index();
-            break;
-        case '/products/create':
-            // Код для обработки создания продукта
-            break;
-        // Другие маршруты...
-        default:
-            // Обработка 404
-            break;
-    }
-}*/
