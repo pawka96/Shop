@@ -7,87 +7,57 @@ function handleRequest($method, $uri, $body) {
     global $routes;
 
     $path = parse_url($uri, PHP_URL_PATH);
-    $resources = explode('/', $path);
+    $resources = explode('/', trim($path, "/"));
 
     $query = parse_url($uri, PHP_URL_QUERY);
     parse_str($query, $params);
 
-    if (!isset($resources[1])) {
+    if (empty($resources[0])) {
 
-
+        throw new ServerException("Ошибка в пути запроса: путь не указан.");
     }
-    else {
-        switch ($resources[1]) {
-            case 'about';
-            case 'contact';
-            case 'user':
-                if ($method == 'POST') {
+    elseif (!array_key_exists($resources[0], $routes)) {
 
-                    $action = $routes['user']['POST'][$path] ?? null;
+        throw new ServerException("Ресурс не найден: $resources[0].");
+    }
+    elseif (in_array($resources[0], ['home', 'about', 'contact'])) {
 
-                    if ($action) {
+        $action = explode("@", $routes[$resources[0]]);
 
-                        call_user_func_array(new $action[0], $action[1], [$body]);
-                    }
-                }
-                break;
+        if (is_array($action) && count($action) === 2) {
 
-            case 'order':
-                switch ($method) {
-                    case 'POST' :
-                        ;
-                    case 'GET':
-                        ;
-                    case 'PUT' :
-                        ;
-                    case 'DELETE' :
-                        ;
-                };
-            case 'item':
-                switch ($method) {
-                    case 'POST' :
-                        ;
-                    case 'GET':
-                        ;
-                    case 'PUT' :
-                        ;
-                    case 'DELETE' :
-                        ;
-                };
-            case 'category':
-                switch ($method) {
-                    case 'POST' :
-                        ;
-                    case 'GET':
-                        ;
-                    case 'PUT' :
-                        ;
-                    case 'DELETE' :
-                        ;
-                };
-            case 'order_item':
-                switch ($method) {
-                    case 'POST' :
-                        ;
-                    case 'GET':
-                        ;
-                    case 'PUT' :
-                        ;
-                    case 'DELETE' :
-                        ;
-                };
-            case 'cart':
-                switch ($method) {
-                    case 'POST' :
-                        ;
-                    case 'GET':
-                        ;
-                    case 'PUT' :
-                        ;
-                    case 'DELETE' :
-                        ;
-                };
+            call_user_func(new $action[0], $action[1]);
+        }
+        else {
+
+            throw new ServerException("Ошибка при получении маршрута ресурса: $resources[0].");
         }
     }
-}
+    else {
+
+        if (!array_key_exists($method, $routes[$resources[0]])) {
+
+            throw new ServerException("Ошибка при получении маршрута ресурса: $resources[0] с методом $method.");
+        }
+        else {
+
+            $action = explode("@", $routes[$resources[0]][$method][$path]);
+
+            if (is_array($action) && count($action) === 2) {
+
+                if (!empty($body)) {
+
+                    call_user_func_array([new $action[0], $action[1]], $body);
+                }
+                else {
+
+                    call_user_func(new $action[0], $action[1]);
+                }
+            }
+            else {
+
+                throw new ServerException("Ошибка при получении маршрута ресурса: $resources[0].");
+            }
+        }
+    }
 }
