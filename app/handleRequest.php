@@ -6,6 +6,7 @@ function handleRequest($method, $uri, $body) {
 
     global $routes;
 
+    // получение пути запроса и ресурсов
     $path = parse_url($uri, PHP_URL_PATH);
     $resources = explode('/', trim($path, "/"));
 
