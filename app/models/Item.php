@@ -1,26 +1,24 @@
 <?php
 
-class Item
-{
+class Item {
 
     private int $id;
     private PDO $pdo;
 
-    public function __construct()
-    {
+    public function __construct() {
 
         try {
 
             $this->pdo = new PDO('psql:host=localhost;dbname=shop', 'postgres', 'Hjccbzlkzheccrb[');
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        } catch (PDOException $exception) {
+        }
+        catch (PDOException $exception) {
 
             throw new ServerException("Ошибка при подключении к БД: " . $exception->getMessage());
         }
     }
 
-    public function getId(): int
-    {
+    public function getId(): int {
 
         return $this->id;
     }
