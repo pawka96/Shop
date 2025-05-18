@@ -3,6 +3,7 @@
 class Item {
 
     private int $id;
+
     private PDO $pdo;
 
     public function __construct() {
