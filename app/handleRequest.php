@@ -1,12 +1,15 @@
 <?php
 
 require_once 'routes.php';
+require_once '../app/models';
+require_once '../app/controllers';
 
 function handleRequest($method, $uri, $body) {
 
     global $routes;
 
     // получение пути запроса и ресурсов
+
     $path = parse_url($uri, PHP_URL_PATH);
     $resources = explode('/', trim($path, "/"));
 
@@ -23,9 +26,13 @@ function handleRequest($method, $uri, $body) {
     }
     elseif (in_array($resources[0], ['home', 'about', 'contact'])) {
 
+        // обработка ресурсов 'home', 'about', 'contact'
+
         $action = explode("@", $routes[$resources[0]]);
 
         if (is_array($action) && count($action) === 2) {
+
+            // в случае успешной проверки, вызов функции контроллера
 
             call_user_func(new $action[0], $action[1]);
         }
@@ -36,23 +43,36 @@ function handleRequest($method, $uri, $body) {
     }
     else {
 
+        // обработка остальных ресурсов
+
         if (!array_key_exists($method, $routes[$resources[0]])) {
+
+            // ошибка, если не найден метод с маршрутом в массиве
 
             throw new ServerException("Ошибка при получении маршрута ресурса: $resources[0] с методом $method.");
         }
         else {
 
+            // в случае успешного нахождения в массиве маршрутов
+
             $action = explode("@", $routes[$resources[0]][$method][$path]);
 
             if (is_array($action) && count($action) === 2) {
 
+                $model = new (ucfirst($resources[0]))();       // создание экземпляра модели с получением его имени с заглавной буквы
+                $controller = new $action[0]($model);       // создание экземпляра контроллера
+
                 if (!empty($body)) {
 
-                    call_user_func_array([new $action[0], $action[1]], $body);
+                    // вызов функции контроллера, если имеется тело запроса
+
+                    call_user_func_array([$controller, $action[1]], $body);
                 }
                 else {
 
-                    call_user_func(new $action[0], $action[1]);
+                    // вызов функции контроллера без тела запроса
+
+                    call_user_func($controller, $action[1]);
                 }
             }
             else {

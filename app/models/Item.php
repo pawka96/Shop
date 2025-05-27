@@ -1,47 +1,10 @@
 <?php
 
-class Item {
+class Item extends Model {
 
-    private int $id;
+    protected string $table_name = "\"item\"";
 
-    private PDO $pdo;
-
-    public function __construct() {
-
-        try {
-
-            $this->pdo = new PDO('psql:host=localhost;dbname=shop', 'postgres', 'Hjccbzlkzheccrb[');
-            $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        }
-        catch (PDOException $exception) {
-
-            throw new ServerException("Ошибка при подключении к БД: " . $exception->getMessage());
-        }
-    }
-
-    public function getId(): int {
-
-        return $this->id;
-    }
-
-    public function getAllItems(): ?array {
-
-        try {
-
-            $stmt = $this->pdo->query('SELECT "item".id, "item".name, "item".brand, category.id as cat_id,
-                                                category.name as cat_name, "item".price, "item".description 
-                                                FROM "item"
-                                                JOIN category ON category.id = "item".category_id');
-
-            return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: null;
-        }
-        catch (PDOException $exception) {
-
-            throw new ServerException("Ошибка при подключении к БД: " . $exception->getMessage());
-        }
-    }
-
-    public function createItem($name, $brand, $price, $category_id, $description) {
+    public function createModel($name, $brand, $price, $category_id, $description) {
 
         try {
 
@@ -58,9 +21,8 @@ class Item {
             else {
 
                 $stmt = $this->pdo->prepare('INSERT INTO "item" (category_id, name, brand, price, description)
-                                                    VALUES (?, ?, ?, ?, ?) RETURNING id;');
+                                                    VALUES (?, ?, ?, ?, ?)');
                 $stmt->execute([$category_id, $name, $brand, $price, $description]);
-                $this->id = $stmt->fetchColumn();
 
                 return "Новый товар успешно добавлен в БД.";
             }
@@ -71,7 +33,7 @@ class Item {
         }
     }
 
-    public function showItem(int $id): ?array {
+    public function showFull(int $id): ?array {
 
         try {
 
@@ -83,55 +45,6 @@ class Item {
             $stmt->execute([$id]);
 
             return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
-        }
-        catch (PDOException $exception) {
-
-            throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
-        }
-    }
-
-    public function updateItem(...$data) {
-
-        try {
-
-            if ($this->id) {
-
-                // формирование частей последующего запроса к БД и соответствующих им значений
-
-                $keys = [];
-                $values = [];
-
-                foreach ($data as $key => $value) {
-
-                    $keys[] = "$key = ?";
-                    $values[] = $value;
-                }
-
-                $sql = 'UPDATE "item" SET ' . implode(", ", $keys) . ' WHERE id = ?';
-                $stmt = $this->pdo->prepare($sql);
-                $stmt->execute([...$values, $this->id]);
-
-                return "Данные товара успешно обновлены.";
-            }
-            else {
-
-                throw new ServerException("Ошибка при работе с БД: товар не найден.");
-            }
-        }
-        catch (PDOException $exception) {
-
-            throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
-        }
-    }
-
-    public function deleteItem(int $id) {
-
-        try {
-
-            $stmt = $this->pdo->prepare('DELETE FROM "item" WHERE id = ?');
-            $stmt->execute([$this->id]);
-
-            return "Товар успешно удален.";
         }
         catch (PDOException $exception) {
 

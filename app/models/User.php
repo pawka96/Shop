@@ -1,42 +1,8 @@
 <?php
 
-class User {
+class User extends Model {
 
-    private int $id;
-
-    private PDO $pdo;
-
-    public function __construct() {
-
-        try {
-
-            $this->pdo = new PDO('psql:host=localhost;dbname=shop', 'postgres', 'Hjccbzlkzheccrb[');
-            $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        }
-        catch (PDOException $exception) {
-
-            throw new ServerException("Ошибка при подключении к БД: " . $exception->getMessage());
-        }
-    }
-
-    public function getId(): int {
-
-        return $this->id;
-    }
-
-    public function getAllUsers(): ?array {
-
-        try {
-
-            $stmt = $this->pdo->query('SELECT id, name, email, password, phone_num, status FROM "user"');
-
-            return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: null;
-        }
-        catch (PDOException $exception) {
-
-            throw new ServerException("Ошибка при подключении к БД: " . $exception->getMessage());
-        }
-    }
+    protected string $table_name = "\"user\"";
 
     public function registerUser($email, $password, $name, $phone_num) {
 
@@ -63,13 +29,10 @@ class User {
                 // при успешной регистрации
 
                 $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
-                $stmt = $this->pdo->prepare('INSERT INTO "user" (email, password, name, phone_num)
-                                                    VALUES (?, ?, ?, ?) RETURNING id');
-
+                $stmt = $this->pdo->prepare('INSERT INTO "user" (email, password, name, phone_num) VALUES (?, ?, ?, ?)');
                 $stmt->execute([$email, $hashedPassword, $name, $phone_num]);
-                $this->id = $stmt->fetchColumn();
 
-                return "Вы успешно зарегистрированы.";
+                return "Регистрация прошла успешно.";
             }
         }
         catch (PDOException $exception) {
@@ -93,71 +56,6 @@ class User {
 
                 throw new ServerException("Ошибка при аутентификации: введены неверные данные.", 401);
             }
-        }
-        catch (PDOException $exception) {
-
-            throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
-        }
-    }
-
-    public function showUser(int $id): ?array {
-
-        try {
-
-            $stmt = $this->pdo->query('SELECT id, name, email, password, phone_num, status
-                                                FROM "user" WHERE id = ?');
-
-            $stmt->execute([$id]);
-
-            return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
-        }
-        catch (PDOException $exception) {
-
-            throw new ServerException("Ошибка при подключении к БД: " . $exception->getMessage());
-        }
-    }
-
-    public function updateUser(...$data) {
-
-        try {
-
-            if ($this->id) {
-
-                // формирование частей последующего запроса к БД и соответствующих им значений
-
-                $keys = [];
-                $values = [];
-
-                foreach ($data as $key => $value) {
-
-                    $keys[] = "$key = ?";
-                    $values[] = $value;
-                }
-
-                $stmt = $this->pdo->prepare('UPDATE "user" SET ' . implode(", ", $keys) . ' WHERE id = ?');
-                $stmt->execute([...$values, $this->id]);
-
-                return "Данные пользователя успешно обновлены.";
-            }
-            else {
-
-                throw new ServerException("Ошибка при работе с БД: пользователь не найден.");
-            }
-        }
-        catch (PDOException $exception) {
-
-            throw new ServerException("Ошибка при подключении к БД: " . $exception->getMessage());
-        }
-    }
-
-    public function deleteUser(int $id) {
-
-        try {
-
-            $stmt = $this->pdo->prepare('DELETE FROM "user" WHERE id = ?');
-            $stmt->execute([$this->id]);
-
-            return "Пользователь успешно удален.";
         }
         catch (PDOException $exception) {
 

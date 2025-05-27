@@ -1,13 +1,8 @@
 <?php
 
-class UserController {
+class UserController extends Controller{
 
-    private User $user;
 
-    public function __construct(User $user) {
-
-        $this->user = $user;
-    }
 
     public function index() {
 
@@ -15,7 +10,7 @@ class UserController {
 
             // формирование успешного ответа
 
-            $response = $this->user->getAllUsers();
+            $response = $this->model->getAllUsers();
             http_response_code(200);
 
             // получение массива пользователей
