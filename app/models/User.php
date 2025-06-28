@@ -1,19 +1,21 @@
 <?php
 
-class User extends Model {
+class User extends BaseModel {
 
-    protected string $table_name = "\"user\"";
+    protected static string $tableName = "\"user\"";
 
-    public function registerUser($email, $password, $name, $phone_num) {
+    public static function registerUser($email, $password, $name, $phone_num): string {
 
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 
             throw new ServerException("Ошибка при регистрации: email не прошел валидацию.");
         }
 
+        self::initPDO();
+
         try {
 
-            $stmt = $this->pdo->prepare('SELECT * FROM "user" WHERE email = ?');
+            $stmt = self::$pdo->prepare('SELECT * FROM "user" WHERE email = ?');
             $stmt->execute([$email]);
 
             if ($stmt->rowCount() > 0) {
@@ -29,7 +31,7 @@ class User extends Model {
                 // при успешной регистрации
 
                 $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
-                $stmt = $this->pdo->prepare('INSERT INTO "user" (email, password, name, phone_num) VALUES (?, ?, ?, ?)');
+                $stmt = self::$pdo->prepare('INSERT INTO "user" (email, password, name, phone_num) VALUES (?, ?, ?, ?)');
                 $stmt->execute([$email, $hashedPassword, $name, $phone_num]);
 
                 return "Регистрация прошла успешно.";
@@ -40,11 +42,13 @@ class User extends Model {
             throw new ServerException("Ошибка при работе с БД: " . $exception->getMessage());
         }
     }
-    public function authenticateUser($email, $password) {
+    public static function authenticateUser($email, $password): string {
+
+        self::initPDO();
 
         try {
 
-            $stmt = $this->pdo->prepare('SELECT password FROM "user" WHERE email = ?');
+            $stmt = self::$pdo->prepare('SELECT password FROM "user" WHERE email = ?');
             $stmt->execute([$email]);
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
 

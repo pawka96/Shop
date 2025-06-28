@@ -1,16 +1,16 @@
 <?php
 
-class Category extends Model {
+class Category extends BaseModel {
 
-    protected string $table_name = "category";
+    protected static string $tablName = "category";
 
-    public function createModel($name, $description) {
+    public static function createModel($name, $description) {
 
         // проверка на дубли в БД
 
         try {
 
-            $stmt = $this->pdo->prepare('SELECT COUNT(*) FROM category WHERE name = ?');
+            $stmt = self::$pdo->prepare('SELECT COUNT(*) FROM category WHERE name = ?');
             $stmt->execute([$name]);
 
             if ($stmt->fetchColumn() > 0) {
@@ -19,7 +19,7 @@ class Category extends Model {
             }
             else {
 
-                $stmt = $this->pdo->prepare('INSERT INTO category (name, description) VALUES (?, ?)');
+                $stmt = self::$pdo->prepare('INSERT INTO category (name, description) VALUES (?, ?)');
                 $stmt->execute([$name, $description]);
 
                 return "Новая категория успешно создана.";

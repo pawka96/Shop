@@ -1,33 +1,35 @@
 <?php
 
-class UserController extends BaseController {
+abstract class BaseController {
 
-    protected static string $modelClass = User::class;
+    protected static string $modelClass;
 
-    /*public function index() {
+    public static function index() {
 
         try {
 
             // формирование успешного ответа
 
-            $response = $this->model->getAllUsers();
+            $response = static::$modelClass::getAll();
             http_response_code(200);
 
-            // получение массива пользователей
+            // получение массива данных
 
-            $users = [];
+            $datas = [];
+            $attrs = [];
 
-            foreach ($response as $user) {
+            foreach ($response as $row => $column) {
 
-                $users[] = [
-                    'type' => 'user',
-                    'id' => $user['id'],
+                $datas[] = [
+                    'type' => strtolower(static::$modelClass),
+                    'id' => $row['id'],
                     'attributes' => [
-                        'name' => $user['name'],
-                        'email' => $user['email'],
-                        'password' => $user['password'],
-                        'phone_num' => $user['phone_num'],
-                        'status' => $user['status']
+                        foreach ($column as $name => $value) {
+
+                            $name = $value;
+                            $attrs = '$name => $value,' . PHP_EOL; 
+                        }
+                        $attrs;
                     ]
                 ];
             }
@@ -43,112 +45,6 @@ class UserController extends BaseController {
                 'status' => 'error',
                 'message' => $exception->getMessage()
             ]);
-        }
-    }*/
-
-    public function register($request) {
-
-        $email = $request['email'] ?? null;
-        $password = $request['password'] ?? null;
-        $name = $request['name'] ?? null;
-        $phone_num = $request['phone_num'] ?? null;
-
-        if (empty($email) || empty($password) || empty($name) || empty($phone_num)) {
-
-            // формирование ошибки в случае отсутствия данных
-
-            http_response_code(400);
-
-            return json_encode([
-                'status' => 'error',
-                'message' => 'Все поля должны быть заполнены.'
-            ]);
-        }
-        else {
-
-            try {
-
-                // формирование ответа при успешной регистрации
-
-                $response = $this->user->registerUser($email, $password, $name, $phone_num);
-                http_response_code(201);
-
-                return json_encode([
-                    'data' => [
-                        'type' => 'user',
-                        'id' => $this->user->getId(),
-                        'attributes' => [
-                            'message' => $response
-                        ]
-                    ]
-                ]);
-            }
-            catch (ServerException $exception) {
-
-                return $exception->handle();
-            }
-            catch (Exception $exception) {
-
-                error_log($exception->getMessage());
-                http_response_code(500);
-
-                return json_encode([
-                    'status' => 'error',
-                    'message' => $exception->getMessage()
-                ]);
-            }
-        }
-    }
-
-    public function authenticate($request) {
-
-        $email = $request['email'] ?? null;
-        $password = $request['password'] ?? null;
-
-        if (empty($email) || empty($password)) {
-
-            // формирование ошибки в случае отсутствия данных
-
-            http_response_code(400);
-
-            return json_encode([
-                'status' => 'error',
-                'message' => 'Все поля должны быть заполнены.'
-            ]);
-        }
-        else {
-
-            try {
-
-                // формирование ответа при успешной аутентификации
-
-                $response = $this->user->authenticateUser($email, $password);
-                http_response_code(204);
-
-                return json_encode([
-                    'data' => [
-                        'type' => 'user',
-                        'id' => $this->user->getId(),
-                        'attributes' => [
-                            'message' => $response
-                        ]
-                    ]
-                ]);
-            }
-            catch (ServerException $exception) {
-
-                return $exception->handle();
-            }
-            catch (Exception $exception) {
-
-                error_log($exception->getMessage());
-                http_response_code(500);
-
-                return json_encode([
-                    'status' => 'error',
-                    'message' => $exception->getMessage()
-                ]);
-            }
         }
     }
 

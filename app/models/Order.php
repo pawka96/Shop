@@ -1,8 +1,8 @@
 <?php
 
-class Order extends Model {
+class Order extends BaseModel {
 
-    protected string $table_name = "\"order\"";
+    protected static string $tableName = "\"order\"";
 
     public function createModel($user_id, $date, $total_sum, $status) {
 
@@ -10,7 +10,7 @@ class Order extends Model {
 
             // создание нового заказа
 
-            $stmt = $this->pdo->prepare('INSERT INTO "order" (user_id, date, total_sum, status) VALUES(?, ?, ?, ?)');
+            $stmt = self::$pdo->prepare('INSERT INTO "order" (user_id, date, total_sum, status) VALUES(?, ?, ?, ?)');
             $stmt->execute([$user_id, $date, $total_sum, $status]);
 
             return "Заказ успешно создан";

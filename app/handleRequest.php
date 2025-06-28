@@ -1,20 +1,34 @@
 <?php
 
-require_once 'routes.php';
-require_once '../app/models';
-require_once '../app/controllers';
+spl_autoload_register(function ($class) {
 
-function handleRequest($method, $uri, $body) {
+    $dir = "C:\PHP\projects\Shop\app\\";
+    $file = $dir;
 
-    global $routes;
+    if (str_contains($class, "Controller")) {
+
+        $file = $dir . "controllers\\" . $class . ".php";
+    }
+    else {
+
+        $file = $dir . "models\\" . $class . ".php";
+    }
+
+    if (file_exists($file)) {
+
+        require_once $file;
+    }
+});
+
+function handleRequest($method, $uri, $body, $routes) {
 
     // получение пути запроса и ресурсов
 
     $path = parse_url($uri, PHP_URL_PATH);
     $resources = explode('/', trim($path, "/"));
 
-    $query = parse_url($uri, PHP_URL_QUERY);
-    parse_str($query, $params);
+    /*$query = parse_url($uri, PHP_URL_QUERY);
+    parse_str($query, $params);*/
 
     if (empty($resources[0])) {
 
@@ -59,8 +73,8 @@ function handleRequest($method, $uri, $body) {
 
             if (is_array($action) && count($action) === 2) {
 
-                $model = new (ucfirst($resources[0]))();       // создание экземпляра модели с получением его имени с заглавной буквы
-                $controller = new $action[0]($model);       // создание экземпляра контроллера
+                /*$model = ucfirst($resources[0]);       // получение имени модели с заглавной буквы*/
+                $controller = $action[0];       // получение имени контроллера
 
                 if (!empty($body)) {
 
@@ -72,7 +86,7 @@ function handleRequest($method, $uri, $body) {
 
                     // вызов функции контроллера без тела запроса
 
-                    call_user_func($controller, $action[1]);
+                    call_user_func([$controller, $action[1]]);
                 }
             }
             else {

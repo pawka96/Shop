@@ -1,16 +1,16 @@
 <?php
 
-class Item extends Model {
+class Item extends BaseModel {
 
-    protected string $table_name = "\"item\"";
+    protected static string $tableName = "\"item\"";
 
-    public function createModel($name, $brand, $price, $category_id, $description) {
+    public static function createModel($name, $brand, $price, $category_id, $description): string {
 
         try {
 
             // проверка на дубли в БД
 
-            $stmt = $this->pdo->prepare('SELECT COUNT(*) FROM "item" WHERE name = ? AND brand = ?');
+            $stmt = self::$pdo->prepare('SELECT COUNT(*) FROM "item" WHERE name = ? AND brand = ?');
             $stmt->execute([$name, $brand]);
 
             if ($stmt->fetchColumn() > 0) {
@@ -20,7 +20,7 @@ class Item extends Model {
             }
             else {
 
-                $stmt = $this->pdo->prepare('INSERT INTO "item" (category_id, name, brand, price, description)
+                $stmt = static::$pdo->prepare('INSERT INTO "item" (category_id, name, brand, price, description)
                                                     VALUES (?, ?, ?, ?, ?)');
                 $stmt->execute([$category_id, $name, $brand, $price, $description]);
 
@@ -33,11 +33,11 @@ class Item extends Model {
         }
     }
 
-    public function showFull(int $id): ?array {
+    public static function showFull(int $id): ?array {
 
         try {
 
-            $stmt = $this->pdo->prepare('SELECT "item".id, "item".name, "item".brand, category.id as cat_id,
+            $stmt = self::$pdo->prepare('SELECT "item".id, "item".name, "item".brand, category.id as cat_id,
                                                 category.name as cat_name, "item".price, "item".description 
                                                 FROM "item" JOIN category ON category.id = "item".category_id
                                                 WHERE item.id = ?');
